@@ -27,20 +27,20 @@ auto-update plugins directly from a GitHub repo.
 
 1. Install the **Obsidian42 - BRAT** plugin from the community plugins browser.
 2. In BRAT settings, click **Add Beta plugin** and paste this repo's URL (e.g.
-   `https://github.com/<your-username>/daily-schedule`).
+   `https://github.com/venables/obsidian-daily-schedule`).
 3. Enable **Daily Schedule** in Obsidian's Community Plugins list.
 
 BRAT will keep it updated whenever you push a new release.
 
 ### Option B — Manual build from source
 
-Requires Node.js 18+ and npm.
+Requires [bun](https://bun.sh).
 
 ```bash
-git clone https://github.com/<your-username>/daily-schedule.git
+git clone https://github.com/venables/obsidian-daily-schedule.git
 cd daily-schedule
-npm install
-npm run build
+bun install
+bun run build
 ```
 
 This produces `main.js` in the project root. Copy the three files below into
@@ -167,11 +167,11 @@ There's also a ribbon icon (calendar-clock) for opening the view.
 ## Development
 
 ```bash
-npm install
-npm run dev        # tsdown watch mode
-npm run build      # one-shot production build
-npm run check      # format:check + lint + typecheck
-npm run fix        # format + auto-fix lint
+bun install
+bun run dev        # tsdown watch mode
+bun run build      # one-shot production build
+bun run check      # format:check + lint
+bun run fix        # format + auto-fix lint
 ```
 
 For the fastest dev loop, symlink (or clone directly into)

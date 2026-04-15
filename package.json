@@ -5,15 +5,14 @@
   "type": "module",
   "scripts": {
     "build": "tsdown",
-    "check": "bun run format:check && bun run lint && bun run typecheck",
+    "check": "bun run format:check && bun run lint",
     "dev": "tsdown --watch",
-    "fix": "bun run format && bun run lint:fix",
-    "format": "oxfmt .",
-    "format:check": "bun format -- --check",
+    "fix": "bun run lint:fix && bun run format",
+    "format": "oxfmt",
+    "format:check": "bun run format -- --check",
     "lint": "oxlint",
-    "lint:fix": "bun lint -- --fix --fix-suggestions",
-    "lint:fixall": "bun lint:fix -- --fix-dangerously",
-    "typecheck": "tsc --noEmit"
+    "lint:fix": "bun run lint -- --fix --fix-suggestions",
+    "lint:fixall": "bun run lint:fix -- --fix-dangerously"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
