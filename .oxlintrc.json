@@ -22,6 +22,7 @@
   "rules": {
     "eslint/curly": "warn",
     "eslint/eqeqeq": ["error", "smart"],
+    "eslint/no-useless-constructor": "off",
     "oxc/no-rest-spread-properties": "off",
     "typescript/ban-ts-comment": "warn",
     "typescript/no-explicit-any": "error",

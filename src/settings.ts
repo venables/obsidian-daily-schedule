@@ -36,11 +36,11 @@ const DEFAULT_COLORS = [
 ]
 
 export class DailyScheduleSettingTab extends PluginSettingTab {
-  private readonly plugin: DailySchedulePlugin
-
-  constructor(app: App, plugin: DailySchedulePlugin) {
+  constructor(
+    app: App,
+    private readonly plugin: DailySchedulePlugin
+  ) {
     super(app, plugin)
-    this.plugin = plugin
   }
 
   display(): void {
