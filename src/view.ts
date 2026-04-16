@@ -45,7 +45,10 @@ export class ScheduleView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
-    await this.refresh()
+    // Render the loading state synchronously, then fetch in the background.
+    // Obsidian awaits onOpen during workspace restoration, so awaiting the
+    // network round-trips here would delay every Obsidian startup.
+    void this.refresh()
   }
 
   async onClose(): Promise<void> {
