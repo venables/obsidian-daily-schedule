@@ -82,6 +82,22 @@ function eventToScheduleEvent(
   }
 }
 
+function buildOverrideKey(uid: string, originalStart: Date): string {
+  return `${uid}|${originalStart.getTime()}`
+}
+
+function collectOverriddenOccurrences(
+  events: readonly IcsEvent[]
+): ReadonlySet<string> {
+  const keys = new Set<string>()
+  for (const event of events) {
+    if (event.recurrenceId) {
+      keys.add(buildOverrideKey(event.uid, event.recurrenceId.value.date))
+    }
+  }
+  return keys
+}
+
 function expandEventsForToday(
   events: readonly IcsEvent[],
   today: Date,
@@ -93,6 +109,11 @@ function expandEventsForToday(
     today.getMonth(),
     today.getDate() + 1
   )
+
+  // Overrides (VEVENTs with RECURRENCE-ID) replace a single occurrence of
+  // their master. Suppress the original occurrence here so the override's own
+  // VEVENT — processed below at its new DTSTART — is the only one that shows.
+  const overriddenOccurrences = collectOverriddenOccurrences(events)
 
   const results: ScheduleEvent[] = []
 
@@ -108,6 +129,9 @@ function expandEventsForToday(
           exceptions: exceptionDates
         })
         for (const occ of occurrences) {
+          if (overriddenOccurrences.has(buildOverrideKey(event.uid, occ))) {
+            continue
+          }
           if (isSameDay(occ, today)) {
             results.push(
               eventToScheduleEvent(event, occ, calendarName, calendarColor)
