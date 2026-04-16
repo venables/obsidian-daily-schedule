@@ -1,12 +1,18 @@
 # Daily Schedule
 
-An Obsidian plugin that shows today's calendar events in a sidebar pane and
-turns any event into a pre-filled meeting note with one click.
+[![Check](https://github.com/venables/obsidian-daily-schedule/actions/workflows/check.yml/badge.svg)](https://github.com/venables/obsidian-daily-schedule/actions/workflows/check.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+Today's meetings in your Obsidian sidebar — one click to a pre-filled note.
+
+<!-- Add a screenshot or GIF here: ./docs/screenshot.png -->
+
+## Features
 
 - Pulls events from one or more **ICS calendar URLs** (Google Calendar, Apple
   Calendar, Outlook, Fastmail, etc.)
 - Expands recurring events for today (handles `RRULE`, including per-occurrence
-  start/end times)
+  start/end overrides)
 - Click an event to create a meeting note at
   `{base}/YYYY/MM/YYYY-MM-DD - Title.md` — or re-open it if it already exists
 - Resolves attendees to `[[Wikilinks]]` by matching email addresses against
@@ -14,6 +20,12 @@ turns any event into a pre-filled meeting note with one click.
 - Filters noise (commute, lunch, OOO, anything you list) by title keywords
 - Highlights the currently-running event, fades past ones
 - Auto-refreshes on a configurable interval (5–60 min)
+- Works on desktop and mobile
+
+## Requirements
+
+- Obsidian **1.0.0** or later
+- An ICS feed URL from your calendar provider (see [Configuration](#calendars))
 
 ## Installation
 
@@ -26,11 +38,11 @@ install paths below.
 auto-update plugins directly from a GitHub repo.
 
 1. Install the **Obsidian42 - BRAT** plugin from the community plugins browser.
-2. In BRAT settings, click **Add Beta plugin** and paste this repo's URL (e.g.
-   `https://github.com/venables/obsidian-daily-schedule`).
+2. In BRAT settings, click **Add Beta plugin** and paste this repo's URL:
+   `https://github.com/venables/obsidian-daily-schedule`
 3. Enable **Daily Schedule** in Obsidian's Community Plugins list.
 
-BRAT will keep it updated whenever you push a new release.
+BRAT will keep it updated whenever a new release is tagged.
 
 ### Option B — Manual build from source
 
@@ -38,7 +50,7 @@ Requires [bun](https://bun.sh).
 
 ```bash
 git clone https://github.com/venables/obsidian-daily-schedule.git
-cd daily-schedule
+cd obsidian-daily-schedule
 bun install
 bun run build
 ```
@@ -56,7 +68,7 @@ your vault:
 Or symlink the `dist/` folder directly:
 
 ```bash
-ln -s /path/to/daily-schedule/dist <vault>/.obsidian/plugins/daily-schedule
+ln -s /path/to/obsidian-daily-schedule/dist <vault>/.obsidian/plugins/daily-schedule
 ```
 
 Then reload Obsidian and enable **Daily Schedule** under Settings → Community
@@ -203,6 +215,17 @@ Built with [tsdown](https://tsdown.dev/) (bundling),
 [oxlint](https://oxc.rs/docs/guide/usage/linter.html) + oxfmt (lint/format), and
 [`ts-ics`](https://www.npmjs.com/package/ts-ics) for ICS parsing.
 
+## Contributing
+
+Issues and pull requests welcome. If you're filing a bug, please include:
+
+- Your Obsidian version and platform (desktop / mobile, OS)
+- Steps to reproduce
+- What you expected vs. what happened
+
+Redact any ICS URLs or private event content from screenshots and logs before
+posting.
+
 ## License
 
-MIT
+[MIT](LICENSE) © Matt Venables
