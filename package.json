@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsdown && cp src/manifest.json src/styles.css dist/",
     "check": "bun run format:check && bun run lint",
+    "deploy": "scripts/deploy.sh",
     "dev": "cp src/manifest.json src/styles.css dist/ && tsdown --watch",
     "fix": "bun run lint:fix && bun run format",
     "format": "oxfmt",
