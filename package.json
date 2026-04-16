@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && cp manifest.json styles.css dist/",
     "check": "bun run format:check && bun run lint",
-    "dev": "tsdown --watch",
+    "dev": "cp manifest.json styles.css dist/ && tsdown --watch",
     "fix": "bun run lint:fix && bun run format",
     "format": "oxfmt",
     "format:check": "bun run format -- --check",

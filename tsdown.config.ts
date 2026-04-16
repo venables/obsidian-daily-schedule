@@ -3,7 +3,7 @@ import { defineConfig } from "tsdown"
 export default defineConfig({
   entry: ["src/main.ts"],
   format: ["cjs"],
-  outDir: ".",
+  outDir: "dist",
   outExtensions: () => ({ js: ".js" }),
   platform: "node",
   target: "es2022",

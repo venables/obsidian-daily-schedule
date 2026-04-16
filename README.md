@@ -43,7 +43,7 @@ bun install
 bun run build
 ```
 
-This produces `main.js` in the project root. Copy the three files below into
+This produces a `dist/` folder with everything the plugin needs. Copy it into
 your vault:
 
 ```
@@ -51,6 +51,12 @@ your vault:
 ├── main.js
 ├── manifest.json
 └── styles.css
+```
+
+Or symlink the `dist/` folder directly:
+
+```bash
+ln -s /path/to/daily-schedule/dist <vault>/.obsidian/plugins/daily-schedule
 ```
 
 Then reload Obsidian and enable **Daily Schedule** under Settings → Community
