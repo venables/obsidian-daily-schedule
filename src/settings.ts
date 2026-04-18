@@ -1,5 +1,6 @@
 import { App, Modal, PluginSettingTab, Setting, debounce } from "obsidian"
 
+import { DEFAULT_MEETING_FILE_PATTERN } from "./helpers"
 import type DailySchedulePlugin from "./main"
 import { FolderSuggest, MarkdownFileSuggest } from "./suggest"
 
@@ -12,6 +13,7 @@ export interface CalendarSource {
 export interface DailyScheduleSettings {
   readonly calendars: readonly CalendarSource[]
   readonly meetingNotePath: string
+  readonly meetingFilePattern: string
   readonly meetingTemplatePath: string
   readonly refreshIntervalMinutes: number
   readonly ignorePatterns: readonly string[]
@@ -22,6 +24,7 @@ export interface DailyScheduleSettings {
 export const DEFAULT_SETTINGS: DailyScheduleSettings = {
   calendars: [],
   meetingNotePath: "meetings",
+  meetingFilePattern: DEFAULT_MEETING_FILE_PATTERN,
   meetingTemplatePath: "",
   refreshIntervalMinutes: 15,
   ignorePatterns: ["commute", "lunch"],
@@ -99,6 +102,16 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
       true
     )
 
+    const saveMeetingFilePattern = debounce(
+      (value: string) => {
+        void this.plugin.updateSettings({
+          meetingFilePattern: value.trim() || DEFAULT_MEETING_FILE_PATTERN
+        })
+      },
+      SETTINGS_DEBOUNCE_MS,
+      true
+    )
+
     containerEl.createEl("h2", { text: "Calendars" })
     this.renderCalendarList(containerEl)
 
@@ -106,9 +119,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Meeting note path")
-      .setDesc(
-        "Base folder for meeting notes. YYYY/MM subfolders are created automatically."
-      )
+      .setDesc("Base folder for meeting notes.")
       .addText((text) => {
         text
           .setPlaceholder("meetings")
@@ -116,6 +127,18 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
           .onChange(saveMeetingNotePath)
         void new FolderSuggest(this.app, text.inputEl)
       })
+
+    new Setting(containerEl)
+      .setName("Meeting note file pattern")
+      .setDesc(
+        "File path within the base folder. Supports Moment.js date tokens (YYYY, MM, MMM, DD, etc.) and {{title}}. The .md extension is added automatically."
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder(DEFAULT_MEETING_FILE_PATTERN)
+          .setValue(this.plugin.settings.meetingFilePattern)
+          .onChange(saveMeetingFilePattern)
+      )
 
     new Setting(containerEl)
       .setName("Meeting note template")

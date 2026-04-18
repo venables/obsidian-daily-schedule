@@ -11,9 +11,10 @@ import type { ResolvedAttendee } from "./people"
 
 export function buildMeetingNotePath(
   basePath: string,
+  pattern: string,
   event: ScheduleEvent
 ): string {
-  return meetingNotePath(basePath, event.start, event.title)
+  return meetingNotePath(basePath, pattern, event.start, event.title)
 }
 
 export function buildMeetingNoteContent(

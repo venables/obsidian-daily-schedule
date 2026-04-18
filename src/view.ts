@@ -239,7 +239,11 @@ export class ScheduleView extends ItemView {
 
   private async handleEventClick(event: ScheduleEvent): Promise<void> {
     const { settings } = this.plugin
-    const notePath = buildMeetingNotePath(settings.meetingNotePath, event)
+    const notePath = buildMeetingNotePath(
+      settings.meetingNotePath,
+      settings.meetingFilePattern,
+      event
+    )
 
     const emailMap = buildEmailMap(this.app, settings.peopleFolders)
     const attendees = resolveAttendees(
