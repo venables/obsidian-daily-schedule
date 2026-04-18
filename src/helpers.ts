@@ -46,10 +46,12 @@ export function meetingNotePath(
 
   // Split on the only non-date placeholder so the title can contain characters
   // (e.g. M, D) that would otherwise be consumed as Moment format tokens.
+  // Moment's `format("")` returns a full ISO string (which contains `:`), so
+  // empty segments (e.g. a trailing `{{title}}`) must be passed through as-is.
   const m = moment(date)
   const formatted = effectivePattern
     .split("{{title}}")
-    .map((segment) => m.format(segment))
+    .map((segment) => (segment === "" ? "" : m.format(segment)))
     .join(cleanTitle(title))
 
   const trimmedBase = basePath.replace(/\/+$/, "")
