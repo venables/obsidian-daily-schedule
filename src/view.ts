@@ -13,6 +13,7 @@ import {
   createOrOpenMeetingNote
 } from "./meeting"
 import { buildEmailMap, resolveAttendees, type EmailMap } from "./people"
+import { loadTemplate, renderMeetingTemplate } from "./template"
 
 declare module "obsidian" {
   interface App {
@@ -240,13 +241,17 @@ export class ScheduleView extends ItemView {
     const { settings } = this.plugin
     const notePath = buildMeetingNotePath(settings.meetingNotePath, event)
 
-    const emailMap = buildEmailMap(this.app, [...settings.peopleFolders])
+    const emailMap = buildEmailMap(this.app, settings.peopleFolders)
     const attendees = resolveAttendees(
       event.attendees,
       emailMap,
       settings.myEmails
     )
-    const content = buildMeetingNoteContent(event, attendees)
+
+    const template = await loadTemplate(this.app, settings.meetingTemplatePath)
+    const content = template
+      ? renderMeetingTemplate(template, event, attendees)
+      : buildMeetingNoteContent(event, attendees)
 
     await createOrOpenMeetingNote(this.app, notePath, content)
   }

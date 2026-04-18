@@ -1,6 +1,7 @@
 import { App, Modal, PluginSettingTab, Setting, debounce } from "obsidian"
 
 import type DailySchedulePlugin from "./main"
+import { FolderSuggest, MarkdownFileSuggest } from "./suggest"
 
 export interface CalendarSource {
   readonly name: string
@@ -11,6 +12,7 @@ export interface CalendarSource {
 export interface DailyScheduleSettings {
   readonly calendars: readonly CalendarSource[]
   readonly meetingNotePath: string
+  readonly meetingTemplatePath: string
   readonly refreshIntervalMinutes: number
   readonly ignorePatterns: readonly string[]
   readonly myEmails: readonly string[]
@@ -20,6 +22,7 @@ export interface DailyScheduleSettings {
 export const DEFAULT_SETTINGS: DailyScheduleSettings = {
   calendars: [],
   meetingNotePath: "meetings",
+  meetingTemplatePath: "",
   refreshIntervalMinutes: 15,
   ignorePatterns: ["commute", "lunch"],
   myEmails: [],
@@ -86,9 +89,11 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
       true
     )
 
-    const savePeopleFolders = debounce(
+    const saveMeetingTemplatePath = debounce(
       (value: string) => {
-        void this.plugin.updateSettings({ peopleFolders: parseCsv(value) })
+        void this.plugin.updateSettings({
+          meetingTemplatePath: value.trim()
+        })
       },
       SETTINGS_DEBOUNCE_MS,
       true
@@ -104,12 +109,26 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
       .setDesc(
         "Base folder for meeting notes. YYYY/MM subfolders are created automatically."
       )
-      .addText((text) =>
+      .addText((text) => {
         text
           .setPlaceholder("meetings")
           .setValue(this.plugin.settings.meetingNotePath)
           .onChange(saveMeetingNotePath)
+        void new FolderSuggest(this.app, text.inputEl)
+      })
+
+    new Setting(containerEl)
+      .setName("Meeting note template")
+      .setDesc(
+        "Optional markdown file used as a template. Placeholders: {{title}}, {{date}}, {{time}}, {{endTime}}, {{location}}, {{description}}, {{attendees}}, {{attendeesYaml}}."
       )
+      .addText((text) => {
+        text
+          .setPlaceholder("templates/meeting.md")
+          .setValue(this.plugin.settings.meetingTemplatePath)
+          .onChange(saveMeetingTemplatePath)
+        void new MarkdownFileSuggest(this.app, text.inputEl)
+      })
 
     new Setting(containerEl)
       .setName("My emails")
@@ -158,18 +177,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
       )
 
     containerEl.createEl("h2", { text: "People Lookup" })
-
-    new Setting(containerEl)
-      .setName("People folders")
-      .setDesc(
-        "Folders to scan for person notes with email frontmatter (comma-separated)."
-      )
-      .addTextArea((text) =>
-        text
-          .setPlaceholder("people, team")
-          .setValue(this.plugin.settings.peopleFolders.join(", "))
-          .onChange(savePeopleFolders)
-      )
+    this.renderPeopleFolders(containerEl)
   }
 
   private renderCalendarList(containerEl: HTMLElement): void {
@@ -208,6 +216,61 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
         .setCta()
         .onClick(() => {
           this.openCalendarModal(-1)
+        })
+    )
+  }
+
+  private renderPeopleFolders(containerEl: HTMLElement): void {
+    const folders = this.plugin.settings.peopleFolders
+
+    new Setting(containerEl)
+      .setName("People folders")
+      .setDesc(
+        "Folders to scan for person notes with email frontmatter. Attendees whose email appears in a person note's frontmatter are replaced with a wikilink."
+      )
+
+    for (let i = 0; i < folders.length; i++) {
+      const row = new Setting(containerEl)
+
+      const savePath = debounce(
+        (value: string) => {
+          // Read from live settings rather than the closed-over `folders`,
+          // so a debounced save that fires after an "Add folder" click sees
+          // the new row and doesn't clobber it.
+          const current = this.plugin.settings.peopleFolders
+          const updated = current.map((f, idx) => (idx === i ? value : f))
+          void this.plugin.updateSettings({ peopleFolders: updated })
+        },
+        SETTINGS_DEBOUNCE_MS,
+        true
+      )
+
+      row.addText((text) => {
+        text.setPlaceholder("people").setValue(folders[i]).onChange(savePath)
+        void new FolderSuggest(this.app, text.inputEl)
+      })
+
+      row.addExtraButton((btn) =>
+        btn
+          .setIcon("trash")
+          .setTooltip("Remove")
+          .onClick(async () => {
+            const updated = folders.filter((_, idx) => idx !== i)
+            await this.plugin.updateSettings({ peopleFolders: updated })
+            this.display()
+          })
+      )
+    }
+
+    new Setting(containerEl).addButton((btn) =>
+      btn
+        .setButtonText("Add folder")
+        .setCta()
+        .onClick(async () => {
+          await this.plugin.updateSettings({
+            peopleFolders: [...folders, ""]
+          })
+          this.display()
         })
     )
   }
