@@ -162,8 +162,7 @@ function expandEventsForToday(
 }
 
 export async function fetchCalendarEvents(
-  sources: readonly CalendarSource[],
-  ignorePatterns: readonly string[]
+  sources: readonly CalendarSource[]
 ): Promise<readonly ScheduleEvent[]> {
   const allEvents: ScheduleEvent[] = []
   const today = new Date()
@@ -185,13 +184,7 @@ export async function fetchCalendarEvents(
     }
   }
 
-  const lowerPatterns = ignorePatterns.map((p) => p.toLowerCase())
-  const filtered = allEvents.filter((e) => {
-    const title = e.title.toLowerCase()
-    return !lowerPatterns.some((pattern) => title.includes(pattern))
-  })
-
-  const deduped = [...deduplicateByUid(filtered)]
+  const deduped = [...deduplicateByUid(allEvents)]
   return deduped.toSorted((a, b) => {
     if (a.allDay && !b.allDay) {
       return -1
@@ -200,6 +193,22 @@ export async function fetchCalendarEvents(
       return 1
     }
     return a.start.getTime() - b.start.getTime()
+  })
+}
+
+export function filterIgnoredEvents(
+  events: readonly ScheduleEvent[],
+  ignorePatterns: readonly string[]
+): readonly ScheduleEvent[] {
+  const lowerPatterns = ignorePatterns
+    .map((p) => p.toLowerCase())
+    .filter(Boolean)
+  if (lowerPatterns.length === 0) {
+    return events
+  }
+  return events.filter((e) => {
+    const title = e.title.toLowerCase()
+    return !lowerPatterns.some((pattern) => title.includes(pattern))
   })
 }
 

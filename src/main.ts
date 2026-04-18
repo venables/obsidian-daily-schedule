@@ -62,14 +62,18 @@ export default class DailySchedulePlugin extends Plugin {
       this.startRefreshInterval()
     }
 
-    // Refresh view if calendar-relevant settings changed
-    if (
-      "calendars" in partial ||
+    // `calendars` changes the set of sources, so we must re-fetch.
+    // Everything else below is a pure display-time concern (filtering or
+    // attendee resolution), so a re-render against the cached events is
+    // enough — no network work.
+    if ("calendars" in partial) {
+      this.refreshView()
+    } else if (
       "ignorePatterns" in partial ||
       "myEmails" in partial ||
       "peopleFolders" in partial
     ) {
-      this.refreshView()
+      this.rerenderView()
     }
   }
 
@@ -93,6 +97,16 @@ export default class DailySchedulePlugin extends Plugin {
       const view = leaf.view
       if (view instanceof ScheduleView) {
         void view.refresh()
+      }
+    }
+  }
+
+  private rerenderView(): void {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE)
+    for (const leaf of leaves) {
+      const view = leaf.view
+      if (view instanceof ScheduleView) {
+        view.rerender()
       }
     }
   }

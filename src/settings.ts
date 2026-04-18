@@ -1,4 +1,4 @@
-import { App, Modal, PluginSettingTab, Setting } from "obsidian"
+import { App, Modal, PluginSettingTab, Setting, debounce } from "obsidian"
 
 import type DailySchedulePlugin from "./main"
 
@@ -35,6 +35,18 @@ const DEFAULT_COLORS = [
   "#1abc9c"
 ]
 
+// Trailing-edge debounce on text input so we save+re-render once the user
+// pauses typing, instead of on every keystroke. 300ms is short enough to feel
+// immediate and long enough to coalesce a typical typing burst.
+const SETTINGS_DEBOUNCE_MS = 300
+
+function parseCsv(value: string): readonly string[] {
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
 export class DailyScheduleSettingTab extends PluginSettingTab {
   constructor(
     app: App,
@@ -46,6 +58,41 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this
     containerEl.empty()
+
+    const saveMeetingNotePath = debounce(
+      (value: string) => {
+        void this.plugin.updateSettings({
+          meetingNotePath: value.trim() || "meetings"
+        })
+      },
+      SETTINGS_DEBOUNCE_MS,
+      true
+    )
+
+    const saveMyEmails = debounce(
+      (value: string) => {
+        const emails = parseCsv(value).map((s) => s.toLowerCase())
+        void this.plugin.updateSettings({ myEmails: emails })
+      },
+      SETTINGS_DEBOUNCE_MS,
+      true
+    )
+
+    const saveIgnorePatterns = debounce(
+      (value: string) => {
+        void this.plugin.updateSettings({ ignorePatterns: parseCsv(value) })
+      },
+      SETTINGS_DEBOUNCE_MS,
+      true
+    )
+
+    const savePeopleFolders = debounce(
+      (value: string) => {
+        void this.plugin.updateSettings({ peopleFolders: parseCsv(value) })
+      },
+      SETTINGS_DEBOUNCE_MS,
+      true
+    )
 
     containerEl.createEl("h2", { text: "Calendars" })
     this.renderCalendarList(containerEl)
@@ -61,11 +108,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
         text
           .setPlaceholder("meetings")
           .setValue(this.plugin.settings.meetingNotePath)
-          .onChange(async (value) => {
-            await this.plugin.updateSettings({
-              meetingNotePath: value.trim() || "meetings"
-            })
-          })
+          .onChange(saveMeetingNotePath)
       )
 
     new Setting(containerEl)
@@ -77,13 +120,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
         text
           .setPlaceholder("you@work.com, you@personal.com")
           .setValue(this.plugin.settings.myEmails.join(", "))
-          .onChange(async (value) => {
-            const emails = value
-              .split(",")
-              .map((s) => s.trim().toLowerCase())
-              .filter(Boolean)
-            await this.plugin.updateSettings({ myEmails: emails })
-          })
+          .onChange(saveMyEmails)
       )
 
     containerEl.createEl("h2", { text: "Display" })
@@ -117,13 +154,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
         text
           .setPlaceholder("commute, lunch, focus time")
           .setValue(this.plugin.settings.ignorePatterns.join(", "))
-          .onChange(async (value) => {
-            const patterns = value
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-            await this.plugin.updateSettings({ ignorePatterns: patterns })
-          })
+          .onChange(saveIgnorePatterns)
       )
 
     containerEl.createEl("h2", { text: "People Lookup" })
@@ -137,13 +168,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
         text
           .setPlaceholder("people, team")
           .setValue(this.plugin.settings.peopleFolders.join(", "))
-          .onChange(async (value) => {
-            const folders = value
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-            await this.plugin.updateSettings({ peopleFolders: folders })
-          })
+          .onChange(savePeopleFolders)
       )
   }
 

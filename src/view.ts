@@ -1,6 +1,10 @@
 import { ItemView, WorkspaceLeaf } from "obsidian"
 
-import { fetchCalendarEvents, type ScheduleEvent } from "./calendar"
+import {
+  fetchCalendarEvents,
+  filterIgnoredEvents,
+  type ScheduleEvent
+} from "./calendar"
 import { formatDate, formatTime } from "./helpers"
 import type DailySchedulePlugin from "./main"
 import {
@@ -8,7 +12,7 @@ import {
   buildMeetingNoteContent,
   createOrOpenMeetingNote
 } from "./meeting"
-import { buildEmailMap, resolveAttendees } from "./people"
+import { buildEmailMap, resolveAttendees, type EmailMap } from "./people"
 
 declare module "obsidian" {
   interface App {
@@ -78,10 +82,7 @@ export class ScheduleView extends ItemView {
     }
 
     try {
-      this.events = await fetchCalendarEvents(
-        settings.calendars,
-        settings.ignorePatterns
-      )
+      this.events = await fetchCalendarEvents(settings.calendars)
       this.lastFetchDate = today
     } catch (err) {
       console.error("[daily-schedule] Fetch failed:", err)
@@ -90,6 +91,19 @@ export class ScheduleView extends ItemView {
         return
       }
       // Keep showing stale events on refresh failure
+    }
+
+    this.rerender()
+  }
+
+  rerender(): void {
+    const { settings } = this.plugin
+
+    if (settings.calendars.length === 0) {
+      this.renderEmpty(
+        "No calendars configured. Open plugin settings to add one."
+      )
+      return
     }
 
     this.renderEvents()
@@ -150,19 +164,26 @@ export class ScheduleView extends ItemView {
 
   private renderEvents(): void {
     const { contentEl } = this
+    const { settings } = this.plugin
     contentEl.empty()
     contentEl.addClass("ds-container")
     this.renderHeader(contentEl)
 
-    if (this.events.length === 0) {
+    const visible = filterIgnoredEvents(this.events, settings.ignorePatterns)
+
+    if (visible.length === 0) {
       contentEl.createEl("p", { cls: "ds-message", text: "No events today." })
       return
     }
 
     const now = new Date()
     const list = contentEl.createEl("div", { cls: "ds-event-list" })
+    const hasAttendees = visible.some((e) => e.attendees.length > 0)
+    const emailMap: EmailMap | null = hasAttendees
+      ? buildEmailMap(this.app, settings.peopleFolders)
+      : null
 
-    for (const event of this.events) {
+    for (const event of visible) {
       const isPast =
         !event.allDay && event.end
           ? event.end.getTime() < now.getTime()
@@ -192,14 +213,11 @@ export class ScheduleView extends ItemView {
       card.createEl("div", { cls: "ds-event-time", text: timeText })
       card.createEl("div", { cls: "ds-event-title", text: event.title })
 
-      if (event.attendees.length > 0) {
-        const emailMap = buildEmailMap(this.app, [
-          ...this.plugin.settings.peopleFolders
-        ])
+      if (event.attendees.length > 0 && emailMap) {
         const resolved = resolveAttendees(
           event.attendees,
           emailMap,
-          this.plugin.settings.myEmails
+          settings.myEmails
         )
 
         if (resolved.length > 0) {
