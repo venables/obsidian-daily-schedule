@@ -48,9 +48,16 @@ export function renderMeetingTemplate(
     location: event.location ?? "",
     description: event.description ?? "",
     attendees: attendees.map((a) => a.wikiLink ?? a.name).join(", "),
-    attendeesYaml: attendees
-      .map((a) => (a.wikiLink ? `  - "${a.wikiLink}"` : `  - ${a.email}`))
-      .join("\n")
+    // Leading newline so inline use (`attendees: {{attendeesYaml}}`) expands
+    // to a properly-indented YAML block. Empty stays empty so the inline
+    // form renders as `attendees: ` (null) instead of a dangling newline.
+    attendeesYaml:
+      attendees.length === 0
+        ? ""
+        : "\n" +
+          attendees
+            .map((a) => (a.wikiLink ? `  - "${a.wikiLink}"` : `  - ${a.email}`))
+            .join("\n")
   }
 
   // Unknown placeholders are left untouched so typos are visible instead of
