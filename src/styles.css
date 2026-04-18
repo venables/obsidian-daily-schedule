@@ -29,16 +29,39 @@
 }
 
 .ds-refresh-btn {
-  padding: 2px 4px;
+  padding: 2px;
   height: auto;
+  min-height: 0;
   line-height: 1;
   background: none;
   color: var(--text-muted);
   box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .ds-refresh-btn:hover {
   color: var(--text-normal);
+}
+
+.ds-refresh-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+@keyframes ds-spin-once {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ds-refresh-btn.ds-spinning svg {
+  animation: ds-spin-once 500ms ease;
 }
 
 .ds-message {

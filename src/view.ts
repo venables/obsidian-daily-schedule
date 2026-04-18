@@ -162,7 +162,6 @@ export class ScheduleView extends ItemView {
     header.createEl("span", { cls: "ds-date", text: dateStr })
 
     const right = header.createEl("div", { cls: "ds-header-right" })
-    right.createEl("span", { cls: "ds-day", text: dayName })
     const refreshBtn = right.createEl("button", {
       cls: "ds-refresh-btn clickable-icon",
       attr: { "aria-label": "Refresh schedule" }
@@ -170,8 +169,13 @@ export class ScheduleView extends ItemView {
     setIcon(refreshBtn, "refresh-cw")
     refreshBtn.addEventListener("click", (e) => {
       e.stopPropagation()
+      refreshBtn.classList.remove("ds-spinning")
+      // Re-add on the next frame so the animation restarts cleanly on
+      // rapid repeat clicks (adding an already-present class is a no-op).
+      requestAnimationFrame(() => refreshBtn.classList.add("ds-spinning"))
       void this.refresh()
     })
+    right.createEl("span", { cls: "ds-day", text: dayName })
   }
 
   private renderEvents(): void {
