@@ -1,6 +1,6 @@
 import { App, Modal, PluginSettingTab, Setting, debounce } from "obsidian"
 
-import { DEFAULT_MEETING_FILE_PATTERN } from "./helpers"
+import { DEFAULT_MEETING_FILE_PATTERN, meetingNotePath } from "./helpers"
 import type DailySchedulePlugin from "./main"
 import { FolderSuggest, MarkdownFileSuggest } from "./suggest"
 
@@ -128,17 +128,36 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
         void new FolderSuggest(this.app, text.inputEl)
       })
 
-    new Setting(containerEl)
-      .setName("Meeting note file pattern")
+    const filenameSetting = new Setting(containerEl)
+      .setName("Meeting filename")
       .setDesc(
         "File path within the base folder. Supports Moment.js date tokens (YYYY, MM, MMM, DD, etc.) and {{title}}. The .md extension is added automatically."
       )
-      .addText((text) =>
-        text
-          .setPlaceholder(DEFAULT_MEETING_FILE_PATTERN)
-          .setValue(this.plugin.settings.meetingFilePattern)
-          .onChange(saveMeetingFilePattern)
+
+    const previewEl = filenameSetting.descEl.createDiv({
+      cls: "ds-filename-preview"
+    })
+    const updatePreview = (pattern: string): void => {
+      const resolved = meetingNotePath(
+        this.plugin.settings.meetingNotePath,
+        pattern,
+        new Date(),
+        "Example Meeting"
       )
+      previewEl.setText(`Preview: ${resolved}`)
+    }
+
+    filenameSetting.addText((text) => {
+      text
+        .setPlaceholder(DEFAULT_MEETING_FILE_PATTERN)
+        .setValue(this.plugin.settings.meetingFilePattern)
+        .onChange((value) => {
+          updatePreview(value)
+          saveMeetingFilePattern(value)
+        })
+    })
+
+    updatePreview(this.plugin.settings.meetingFilePattern)
 
     new Setting(containerEl)
       .setName("Meeting note template")
@@ -200,6 +219,10 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
       )
 
     containerEl.createEl("h2", { text: "People Lookup" })
+    containerEl.createEl("p", {
+      cls: "setting-item-description",
+      text: "Folders to scan for person notes with email frontmatter. Attendees whose email appears in a person note's frontmatter are replaced with a wikilink."
+    })
     this.renderPeopleFolders(containerEl)
   }
 
@@ -245,12 +268,6 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
 
   private renderPeopleFolders(containerEl: HTMLElement): void {
     const folders = this.plugin.settings.peopleFolders
-
-    new Setting(containerEl)
-      .setName("People folders")
-      .setDesc(
-        "Folders to scan for person notes with email frontmatter. Attendees whose email appears in a person note's frontmatter are replaced with a wikilink."
-      )
 
     for (let i = 0; i < folders.length; i++) {
       const row = new Setting(containerEl)

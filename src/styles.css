@@ -84,3 +84,10 @@
   color: var(--text-faint);
   margin-top: 2px;
 }
+
+.ds-filename-preview {
+  margin-top: 4px;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
