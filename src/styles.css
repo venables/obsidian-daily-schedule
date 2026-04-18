@@ -17,9 +17,28 @@
   color: var(--text-normal);
 }
 
+.ds-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .ds-day {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
+}
+
+.ds-refresh-btn {
+  padding: 2px 4px;
+  height: auto;
+  line-height: 1;
+  background: none;
+  color: var(--text-muted);
+  box-shadow: none;
+}
+
+.ds-refresh-btn:hover {
+  color: var(--text-normal);
 }
 
 .ds-message {

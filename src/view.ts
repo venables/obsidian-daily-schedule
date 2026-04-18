@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from "obsidian"
+import { ItemView, WorkspaceLeaf, setIcon } from "obsidian"
 
 import {
   fetchCalendarEvents,
@@ -160,7 +160,18 @@ export class ScheduleView extends ItemView {
 
     const header = container.createEl("div", { cls: "ds-header" })
     header.createEl("span", { cls: "ds-date", text: dateStr })
-    header.createEl("span", { cls: "ds-day", text: dayName })
+
+    const right = header.createEl("div", { cls: "ds-header-right" })
+    right.createEl("span", { cls: "ds-day", text: dayName })
+    const refreshBtn = right.createEl("button", {
+      cls: "ds-refresh-btn clickable-icon",
+      attr: { "aria-label": "Refresh schedule" }
+    })
+    setIcon(refreshBtn, "refresh-cw")
+    refreshBtn.addEventListener("click", (e) => {
+      e.stopPropagation()
+      void this.refresh()
+    })
   }
 
   private renderEvents(): void {
