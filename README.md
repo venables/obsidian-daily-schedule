@@ -5,7 +5,7 @@
 
 Today's meetings in your Obsidian sidebar — one click to a pre-filled note.
 
-<!-- Add a screenshot or GIF here: ./docs/screenshot.png -->
+![Daily Schedule](./docs/screenshot.png)
 
 ## Features
 
