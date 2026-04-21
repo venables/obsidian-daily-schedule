@@ -32,6 +32,22 @@ function isAllDay(d: IcsDateObject): boolean {
   return d.type === "DATE"
 }
 
+// ts-ics parses VALUE=DATE as UTC midnight, so an event on April 22 becomes
+// April 21 20:00 in Eastern Time. Rebuild the date at local midnight of the
+// same calendar day so downstream date formatting/comparison reflects the
+// ICS calendar date regardless of the viewer's timezone.
+function normalizeAllDayDate(d: Date): Date {
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+}
+
+function isAllDayOnDate(allDayDate: Date, today: Date): boolean {
+  return (
+    allDayDate.getUTCFullYear() === today.getFullYear() &&
+    allDayDate.getUTCMonth() === today.getMonth() &&
+    allDayDate.getUTCDate() === today.getDate()
+  )
+}
+
 function computeEndDate(event: IcsEvent): Date | null {
   if (event.end) {
     return icsDateToDate(event.end)
@@ -71,8 +87,8 @@ function eventToScheduleEvent(
   return {
     uid: event.uid,
     title: event.summary || "Untitled",
-    start: startDate,
-    end,
+    start: allDay ? normalizeAllDayDate(startDate) : startDate,
+    end: allDay && end ? normalizeAllDayDate(end) : end,
     allDay,
     attendees: event.attendees ?? [],
     location: event.location ?? null,
@@ -119,6 +135,9 @@ function expandEventsForToday(
 
   for (const event of events) {
     const eventStart = icsDateToDate(event.start)
+    const allDay = isAllDay(event.start)
+    const matchesToday = (d: Date) =>
+      allDay ? isAllDayOnDate(d, today) : isSameDay(d, today)
 
     if (event.recurrenceRule) {
       const exceptionDates = (event.exceptionDates ?? []).map((ex) => ex.date)
@@ -132,7 +151,7 @@ function expandEventsForToday(
           if (overriddenOccurrences.has(buildOverrideKey(event.uid, occ))) {
             continue
           }
-          if (isSameDay(occ, today)) {
+          if (matchesToday(occ)) {
             results.push(
               eventToScheduleEvent(event, occ, calendarName, calendarColor)
             )
@@ -143,14 +162,14 @@ function expandEventsForToday(
           `[daily-schedule] Failed to expand RRULE for "${event.summary}":`,
           err
         )
-        if (isSameDay(eventStart, today)) {
+        if (matchesToday(eventStart)) {
           results.push(
             eventToScheduleEvent(event, eventStart, calendarName, calendarColor)
           )
         }
       }
     } else {
-      if (isSameDay(eventStart, today)) {
+      if (matchesToday(eventStart)) {
         results.push(
           eventToScheduleEvent(event, eventStart, calendarName, calendarColor)
         )
