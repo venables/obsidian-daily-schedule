@@ -1,5 +1,6 @@
-import { Plugin } from "obsidian"
+import { Notice, Plugin } from "obsidian"
 
+import { backfillAttendeeLinks } from "./backfill"
 import {
   DEFAULT_SETTINGS,
   DailyScheduleSettingTab,
@@ -35,6 +36,14 @@ export default class DailySchedulePlugin extends Plugin {
       name: "Refresh daily schedule",
       callback: () => {
         this.refreshView()
+      }
+    })
+
+    this.addCommand({
+      id: "relink-meeting-attendees",
+      name: "Relink meeting attendees",
+      callback: () => {
+        void this.relinkMeetingAttendees()
       }
     })
 
@@ -89,6 +98,17 @@ export default class DailySchedulePlugin extends Plugin {
       await leaf.setViewState({ type: VIEW_TYPE, active: true })
       void this.app.workspace.revealLeaf(leaf)
     }
+  }
+
+  private async relinkMeetingAttendees(): Promise<void> {
+    const result = await backfillAttendeeLinks(
+      this.app,
+      this.settings.meetingNotePath,
+      this.settings.peopleFolders
+    )
+    void new Notice(
+      `Relinked ${result.attendeesRelinked} attendee(s) across ${result.filesUpdated} note(s) (scanned ${result.filesScanned})`
+    )
   }
 
   private refreshView(): void {
