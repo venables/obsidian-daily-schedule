@@ -10,6 +10,7 @@ import {
 
 import { isSameDay } from "./helpers"
 import type { CalendarSource } from "./settings"
+import { instantFromTzWallClock } from "./timezone"
 
 export interface ScheduleEvent {
   readonly uid: string
@@ -102,6 +103,39 @@ function buildOverrideKey(uid: string, originalStart: Date): string {
   return `${uid}|${originalStart.getTime()}`
 }
 
+function hasMidnightUtcTime(d: Date): boolean {
+  return (
+    d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0
+  )
+}
+
+// Workaround for a ts-ics bug: extendByRecurrenceRule strips the time-of-day
+// from MONTHLY+BYDAY occurrences, returning them at 00:00 UTC. When DTSTART
+// has a known TZID and the occurrence comes back at midnight UTC even though
+// DTSTART isn't, re-anchor it to DTSTART's wall-clock time in DTSTART's
+// timezone (the RFC 5545-correct behavior for TZID-bound rules). This also
+// fixes downstream EXDATE matching and override suppression, both of which
+// compare timestamps that the bug renders inconsistent.
+function reanchorOccurrence(occ: Date, eventStart: IcsDateObject): Date {
+  const tz = eventStart.local?.timezone
+  const localStart = eventStart.local?.date
+  if (!tz || !localStart) {
+    return occ
+  }
+  if (!hasMidnightUtcTime(occ) || hasMidnightUtcTime(eventStart.date)) {
+    return occ
+  }
+  return instantFromTzWallClock(
+    occ.getUTCFullYear(),
+    occ.getUTCMonth(),
+    occ.getUTCDate(),
+    localStart.getUTCHours(),
+    localStart.getUTCMinutes(),
+    localStart.getUTCSeconds(),
+    tz
+  )
+}
+
 function collectOverriddenOccurrences(
   events: readonly IcsEvent[]
 ): ReadonlySet<string> {
@@ -141,6 +175,7 @@ function expandEventsForToday(
 
     if (event.recurrenceRule) {
       const exceptionDates = (event.exceptionDates ?? []).map((ex) => ex.date)
+      const exceptionTimes = new Set(exceptionDates.map((d) => d.getTime()))
       try {
         const occurrences = extendByRecurrenceRule(event.recurrenceRule, {
           start: eventStart,
@@ -148,12 +183,21 @@ function expandEventsForToday(
           exceptions: exceptionDates
         })
         for (const occ of occurrences) {
-          if (overriddenOccurrences.has(buildOverrideKey(event.uid, occ))) {
+          const adjusted = reanchorOccurrence(occ, event.start)
+          // Re-check exceptions against the adjusted instant: ts-ics drops
+          // EXDATE matches when its expansion strips the time-of-day, since
+          // the parsed EXDATE timestamps then no longer line up.
+          if (exceptionTimes.has(adjusted.getTime())) {
             continue
           }
-          if (matchesToday(occ)) {
+          if (
+            overriddenOccurrences.has(buildOverrideKey(event.uid, adjusted))
+          ) {
+            continue
+          }
+          if (matchesToday(adjusted)) {
             results.push(
-              eventToScheduleEvent(event, occ, calendarName, calendarColor)
+              eventToScheduleEvent(event, adjusted, calendarName, calendarColor)
             )
           }
         }
