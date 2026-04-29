@@ -17,11 +17,11 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "ical.js": "^2.2.1",
     "obsidian": "^1.7.2",
     "oxfmt": "latest",
     "oxlint": "latest",
     "oxlint-tsgolint": "latest",
-    "ts-ics": "^2.4.0",
     "tsdown": "latest",
     "typescript": "^5.5.0"
   }

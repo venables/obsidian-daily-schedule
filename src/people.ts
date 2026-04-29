@@ -67,7 +67,10 @@ export interface ResolvedAttendee {
 }
 
 export function resolveAttendees(
-  attendees: readonly { readonly email: string; readonly name?: string }[],
+  attendees: readonly {
+    readonly email: string
+    readonly name?: string | null
+  }[],
   emailMap: EmailMap,
   myEmails: readonly string[]
 ): readonly ResolvedAttendee[] {
