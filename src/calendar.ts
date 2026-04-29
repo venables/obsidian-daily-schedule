@@ -168,6 +168,10 @@ function expandEventsForToday(
   const results: ScheduleEvent[] = []
 
   for (const event of events) {
+    if (event.status === "CANCELLED") {
+      continue
+    }
+
     const eventStart = icsDateToDate(event.start)
     const allDay = isAllDay(event.start)
     const matchesToday = (d: Date) =>
