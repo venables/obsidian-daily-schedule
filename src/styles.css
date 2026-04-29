@@ -109,6 +109,14 @@
   background-color: var(--background-modifier-hover);
 }
 
+.ds-event-card.ds-event-declined {
+  opacity: 0.4;
+}
+
+.ds-event-card.ds-event-declined .ds-event-title {
+  text-decoration: line-through;
+}
+
 .ds-event-time {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);

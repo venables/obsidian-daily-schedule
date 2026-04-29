@@ -199,6 +199,10 @@ export class ScheduleView extends ItemView {
       ? buildEmailMap(this.app, settings.peopleFolders)
       : null
 
+    const myEmailSet = new Set(
+      settings.myEmails.map((e) => e.toLowerCase().trim()).filter(Boolean)
+    )
+
     for (const event of visible) {
       const isPast =
         !event.allDay && event.end
@@ -212,8 +216,16 @@ export class ScheduleView extends ItemView {
             event.end.getTime() > now.getTime()
           : false
 
+      const isDeclined =
+        myEmailSet.size > 0 &&
+        event.attendees.some(
+          (a) =>
+            myEmailSet.has(a.email.toLowerCase().trim()) &&
+            a.partstat === "DECLINED"
+        )
+
       const card = list.createEl("div", {
-        cls: `ds-event-card${isPast ? " ds-event-past" : ""}${isCurrent ? " ds-event-current" : ""}`
+        cls: `ds-event-card${isPast ? " ds-event-past" : ""}${isCurrent ? " ds-event-current" : ""}${isDeclined ? " ds-event-declined" : ""}`
       })
 
       if (event.calendarColor) {
