@@ -171,6 +171,15 @@ async function createWithCoreTemplate(
       )
     }
     const content = view.editor.getValue()
+    // If the user clicked away to a different leaf during the await on
+    // insertTemplate, the core plugin may have inserted into that other
+    // editor and left ours empty. Bail out so the catch cleans up the stub
+    // and the outer fallback renders the template ourselves.
+    if (content === "") {
+      throw new Error(
+        `insertTemplate left ${notePath} empty (user click-away?)`
+      )
+    }
     const replaced = renderEventPlaceholders(content, event, attendees)
     if (replaced !== content) {
       view.editor.setValue(replaced)
@@ -182,10 +191,19 @@ async function createWithCoreTemplate(
     await view.save()
   } catch (err) {
     // Detach the leaf before deleting so the editor doesn't hold the soon-
-    // to-be-removed file open as a broken tab. detach itself can throw if
-    // the leaf is already gone -- swallow that so we still attempt deletion.
+    // to-be-removed file open as a broken tab. Only detach if the leaf
+    // still shows our file -- a user click-away during the awaits could
+    // have already pointed it at something else, and we shouldn't close
+    // an unrelated tab. detach itself can throw if the leaf is already
+    // gone -- swallow that so we still attempt deletion.
     try {
-      openedLeaf?.detach()
+      const leafView = openedLeaf?.view
+      if (
+        leafView instanceof MarkdownView &&
+        leafView.file?.path === created.path
+      ) {
+        openedLeaf?.detach()
+      }
     } catch (detachErr) {
       console.error("[daily-schedule] Failed to detach leaf:", detachErr)
     }
