@@ -1,4 +1,4 @@
-import { App, Notice, TFile } from "obsidian"
+import { App, MarkdownView, Notice, TFile, type WorkspaceLeaf } from "obsidian"
 
 import type { ScheduleEvent } from "./calendar"
 import { type CoreTemplatesAPI, getCoreTemplatesAPI } from "./coreTemplates"
@@ -130,7 +130,14 @@ export async function createMeetingNote(
     event,
     attendees
   )
-  await app.vault.create(notePath, content)
+  // The core path may have left an empty stub if its cleanup failed; reuse it
+  // rather than throwing "file already exists" from a blind vault.create.
+  const stub = app.vault.getAbstractFileByPath(notePath)
+  if (stub instanceof TFile) {
+    await app.vault.modify(stub, content)
+  } else {
+    await app.vault.create(notePath, content)
+  }
   await app.workspace.openLinkText(notePath, "")
   void new Notice("Created meeting note")
 }
@@ -144,23 +151,34 @@ async function createWithCoreTemplate(
   attendees: readonly ResolvedAttendee[]
 ): Promise<void> {
   const created = await app.vault.create(notePath, "")
+  let openedLeaf: WorkspaceLeaf | null = null
   try {
     // insertTemplate inserts at the active editor's cursor, so make our new
     // file the active editor first.
-    const leaf = app.workspace.getLeaf(false)
-    await leaf.openFile(created)
+    openedLeaf = app.workspace.getLeaf(false)
+    await openedLeaf.openFile(created)
     await coreApi.insertTemplate(templateFile)
 
-    // insertTemplate writes into the editor buffer, not directly to disk.
-    // vault.process is editor-aware: if the file is open in an editor it
-    // operates on the editor's content and writes back through it, which
-    // avoids the race a plain vault.read/modify would lose.
-    await app.vault.process(created, (data) =>
-      renderEventPlaceholders(data, event, attendees)
-    )
+    // insertTemplate writes into the editor buffer, not directly to disk, so
+    // we must read/write through the editor or the second pass will see our
+    // empty stub. Match the editor by file path because activeEditor can
+    // shift if the user clicked away while we awaited.
+    const view = app.workspace.getActiveViewOfType(MarkdownView)
+    if (view?.file?.path === created.path) {
+      const content = view.editor.getValue()
+      const replaced = renderEventPlaceholders(content, event, attendees)
+      if (replaced !== content) {
+        view.editor.setValue(replaced)
+      }
+    } else {
+      console.warn(
+        "[daily-schedule] Active editor changed during template insertion; event placeholders may not be substituted"
+      )
+    }
   } catch (err) {
-    // Don't leave an empty stub behind -- the next click would early-return on
-    // existence and silently open a blank note.
+    // Detach the leaf before deleting so the editor doesn't hold the soon-to-
+    // be-removed file open as a broken tab.
+    openedLeaf?.detach()
     await app.vault.delete(created).catch((delErr) => {
       console.error("[daily-schedule] Failed to clean up empty stub:", delErr)
     })
