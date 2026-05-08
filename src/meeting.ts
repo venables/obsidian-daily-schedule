@@ -11,7 +11,7 @@ import {
 import type { ResolvedAttendee } from "./people"
 import {
   loadTemplate,
-  renderCustomPlaceholders,
+  renderEventPlaceholders,
   renderMeetingTemplate
 } from "./template"
 
@@ -103,22 +103,30 @@ export async function createMeetingNote(
   await ensureFolderExists(app.vault, notePath)
 
   if (templateFile instanceof TFile && coreApi) {
-    await createWithCoreTemplate(
-      app,
-      notePath,
-      templateFile,
-      coreApi,
-      event,
-      attendees
-    )
-    void new Notice("Created meeting note")
-    return
+    try {
+      await createWithCoreTemplate(
+        app,
+        notePath,
+        templateFile,
+        coreApi,
+        event,
+        attendees
+      )
+      void new Notice("Created meeting note")
+      return
+    } catch (err) {
+      console.error(
+        "[daily-schedule] Core templates path failed; falling back",
+        err
+      )
+      // Fall through to the fallback renderer below.
+    }
   }
 
   const content = await renderFallbackContent(
     app,
-    templateFile instanceof TFile ? templateFile : null,
-    trimmedTemplate,
+    notePath,
+    templateFile instanceof TFile ? trimmedTemplate : "",
     event,
     attendees
   )
@@ -136,36 +144,41 @@ async function createWithCoreTemplate(
   attendees: readonly ResolvedAttendee[]
 ): Promise<void> {
   const created = await app.vault.create(notePath, "")
-  // Open with `openFile` rather than `openLinkText` because the core plugin's
-  // insertTemplate inserts at the active editor's cursor -- we need a
-  // deterministic active leaf before calling it.
-  const leaf = app.workspace.getLeaf(false)
-  await leaf.openFile(created)
-  await coreApi.insertTemplate(templateFile)
+  try {
+    // insertTemplate inserts at the active editor's cursor, so make our new
+    // file the active editor first.
+    const leaf = app.workspace.getLeaf(false)
+    await leaf.openFile(created)
+    await coreApi.insertTemplate(templateFile)
 
-  // Second pass for placeholders the core plugin doesn't know about
-  // ({{attendees}}, {{location}}, etc.). Read from disk rather than the
-  // editor so we don't depend on the editor view being in any particular
-  // state after insertTemplate returns.
-  const inserted = await app.vault.read(created)
-  const replaced = renderCustomPlaceholders(inserted, event, attendees)
-  if (replaced !== inserted) {
-    await app.vault.modify(created, replaced)
+    // insertTemplate writes into the editor buffer, not directly to disk.
+    // vault.process is editor-aware: if the file is open in an editor it
+    // operates on the editor's content and writes back through it, which
+    // avoids the race a plain vault.read/modify would lose.
+    await app.vault.process(created, (data) =>
+      renderEventPlaceholders(data, event, attendees)
+    )
+  } catch (err) {
+    // Don't leave an empty stub behind -- the next click would early-return on
+    // existence and silently open a blank note.
+    await app.vault.delete(created).catch((delErr) => {
+      console.error("[daily-schedule] Failed to clean up empty stub:", delErr)
+    })
+    throw err
   }
 }
 
 async function renderFallbackContent(
   app: App,
-  templateFile: TFile | null,
+  notePath: string,
   templatePath: string,
   event: ScheduleEvent,
   attendees: readonly ResolvedAttendee[]
 ): Promise<string> {
-  // Resolved file present but core plugin missing -- read it ourselves.
-  if (templateFile) {
+  if (templatePath) {
     const raw = await loadTemplate(app, templatePath)
     if (raw !== null) {
-      return renderMeetingTemplate(raw, event, attendees)
+      return renderMeetingTemplate(raw, notePath, event, attendees)
     }
   }
   return buildMeetingNoteContent(event, attendees)

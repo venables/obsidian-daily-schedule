@@ -106,8 +106,49 @@ Public Calendar → copy the `webcal://` URL and change `webcal://` to `https://
 
 - **Meeting note path** — base folder (default `meetings`). The plugin
   auto-creates `YYYY/MM/` subfolders.
+- **Meeting filename** — file path within the base folder, with Moment.js date
+  tokens and `{{title}}`. Default: `YYYY/MM/YYYY-MM-DD - {{title}}`.
+- **Meeting note template** — optional path to a markdown file used as the body
+  template (see [Template placeholders](#template-placeholders)).
 - **My emails** — comma-separated. Your own addresses are stripped from attendee
   lists so you're not "meeting with yourself".
+
+### Template placeholders
+
+When the **core Obsidian Templates plugin** is enabled (it is by default), new
+notes are run through it so its placeholders work:
+
+| Placeholder       | Replaced with                                       |
+| ----------------- | --------------------------------------------------- |
+| `{{title}}`       | The new note's filename (without `.md`)             |
+| `{{date}}`        | Today's date (Templates plugin's configured format) |
+| `{{date:FORMAT}}` | Today's date in Moment.js `FORMAT`                  |
+| `{{time}}`        | Current time (Templates plugin's configured format) |
+| `{{time:FORMAT}}` | Current time in Moment.js `FORMAT`                  |
+
+This plugin then runs a second pass for **event-specific** placeholders that
+pull from the calendar event you clicked:
+
+| Placeholder               | Replaced with                                    |
+| ------------------------- | ------------------------------------------------ |
+| `{{eventTitle}}`          | Event title (emoji and unsafe chars stripped)    |
+| `{{eventDate}}`           | Event start date (`YYYY-MM-DD`)                  |
+| `{{eventDate:FORMAT}}`    | Event start date in Moment.js `FORMAT`           |
+| `{{eventTime}}`           | Event start time (locale-formatted)              |
+| `{{eventTime:FORMAT}}`    | Event start time in Moment.js `FORMAT`           |
+| `{{eventEndTime}}`        | Event end time (locale-formatted)                |
+| `{{eventEndTime:FORMAT}}` | Event end time in Moment.js `FORMAT`             |
+| `{{eventLocation}}`       | Event location (or empty)                        |
+| `{{eventDescription}}`    | Event description (or empty)                     |
+| `{{eventAttendees}}`      | Comma-separated attendees (wikilinks if known)   |
+| `{{eventAttendeesYaml}}`  | YAML list of attendees, suitable for frontmatter |
+
+If the core Templates plugin is disabled, `{{title}}` / `{{date}}` / `{{time}}`
+still work — this plugin falls back to a Moment.js-based renderer that mirrors
+the core plugin's behavior, so the same template renders identically either way.
+
+Unknown placeholders are left untouched (matching the core plugin), so typos are
+visible rather than silently dropped.
 
 ### Display
 
@@ -202,18 +243,20 @@ folder to opt in.
 
 ```
 src/
-├── main.ts       plugin entrypoint, commands, refresh timer
-├── view.ts       sidebar ItemView + event rendering
-├── settings.ts   settings tab + calendar add/edit modal
-├── calendar.ts   ICS fetch, RRULE expansion, filtering
-├── meeting.ts    meeting note path + content builder
-├── people.ts     email → person-note frontmatter lookup
-└── helpers.ts    date/time/string utilities
+├── main.ts            plugin entrypoint, commands, refresh timer
+├── view.ts            sidebar ItemView + event rendering
+├── settings.ts        settings tab + calendar add/edit modal
+├── calendar.ts        ICS fetch, RRULE expansion, filtering
+├── meeting.ts         meeting note path + creation orchestration
+├── template.ts        template placeholder rendering
+├── coreTemplates.ts   internal accessor for Obsidian's core Templates plugin
+├── people.ts          email → person-note frontmatter lookup
+└── helpers.ts         date/time/string utilities
 ```
 
 Built with [tsdown](https://tsdown.dev/) (bundling),
 [oxlint](https://oxc.rs/docs/guide/usage/linter.html) + oxfmt (lint/format), and
-[`ts-ics`](https://www.npmjs.com/package/ts-ics) for ICS parsing.
+[`ical.js`](https://www.npmjs.com/package/ical.js) for ICS parsing.
 
 ## Contributing
 

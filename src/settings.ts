@@ -162,7 +162,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName("Meeting note template")
       .setDesc(
-        "Optional markdown file used as a template. Placeholders: {{title}}, {{date}}, {{time}}, {{endTime}}, {{location}}, {{description}}, {{attendees}}, {{attendeesYaml}}."
+        "Optional markdown file used as a template. Event placeholders: {{eventTitle}}, {{eventDate[:FMT]}}, {{eventTime[:FMT]}}, {{eventEndTime[:FMT]}}, {{eventLocation}}, {{eventDescription}}, {{eventAttendees}}, {{eventAttendeesYaml}}. Core Templates plugin placeholders ({{title}}, {{date[:FMT]}}, {{time[:FMT]}}) also work and resolve via the core plugin when it's enabled."
       )
       .addText((text) => {
         text

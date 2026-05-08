@@ -35,5 +35,5 @@
     "typeAware": true,
     "typeCheck": true
   },
-  "ignorePatterns": [".claude"]
+  "ignorePatterns": [".claude", "main.js", "node_modules"]
 }

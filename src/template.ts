@@ -11,15 +11,18 @@ type CallableMoment = typeof momentModule & ((input: Date) => Moment)
 // eslint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- moment at runtime is a callable fn, but its TS type is a namespace
 const moment = momentModule as unknown as CallableMoment
 
-export const SUPPORTED_PLACEHOLDERS = [
-  "title",
-  "date",
-  "time",
-  "endTime",
-  "location",
-  "description",
-  "attendees",
-  "attendeesYaml"
+// Event-derived placeholders we always own. The core Templates plugin's
+// {{title}} / {{date}} / {{time}} are deliberately kept distinct so users can
+// pick "this event" (event*) or "right now / this file" (core) without overlap.
+export const EVENT_PLACEHOLDERS = [
+  "eventTitle",
+  "eventDate",
+  "eventTime",
+  "eventEndTime",
+  "eventLocation",
+  "eventDescription",
+  "eventAttendees",
+  "eventAttendeesYaml"
 ] as const
 
 export async function loadTemplate(
@@ -42,46 +45,62 @@ export async function loadTemplate(
   }
 }
 
-// Full render used when the core Templates plugin isn't available -- runs both
-// passes ourselves so the user still gets {{date:FORMAT}} support.
+// Full render used when the core Templates plugin isn't available -- handles
+// both event* placeholders AND replicates the core plugin's {{title}}, {{date}},
+// {{time}} (with optional :FORMAT) so a single template renders identically
+// either way.
 export function renderMeetingTemplate(
   template: string,
+  notePath: string,
   event: ScheduleEvent,
   attendees: readonly ResolvedAttendee[]
 ): string {
-  const withBuiltins = renderBuiltinPlaceholders(template, event)
-  return renderCustomPlaceholders(withBuiltins, event, attendees)
+  const withCore = renderCoreEquivalentPlaceholders(template, notePath)
+  return renderEventPlaceholders(withCore, event, attendees)
 }
 
-// Substitutes only the placeholders the core Templates plugin doesn't know
-// about. Used after `insertTemplate` runs so we don't double-process
-// {{title}} / {{date}} / {{time}}.
-export function renderCustomPlaceholders(
+// Substitutes only the event* placeholders. Used after the core plugin's
+// insertTemplate has filled in {{title}} / {{date}} / {{time}}.
+export function renderEventPlaceholders(
   template: string,
   event: ScheduleEvent,
   attendees: readonly ResolvedAttendee[]
 ): string {
+  const startMoment = moment(event.start)
   const endMoment = event.end ? moment(event.end) : null
 
-  // endTime supports an optional :FORMAT, like time/date.
-  const withEndTime = template.replace(
-    /\{\{endTime(?::([^}]+))?\}\}/g,
-    (_match, fmt: string | undefined) => {
-      if (event.allDay || !endMoment || !event.end) {
-        return ""
+  const withFormatted = template.replace(
+    /\{\{(eventDate|eventTime|eventEndTime)(?::([^}]+))?\}\}/g,
+    (match, key: string, fmt: string | undefined) => {
+      switch (key) {
+        case "eventDate":
+          return fmt ? startMoment.format(fmt) : formatDate(event.start)
+        case "eventTime":
+          if (event.allDay) {
+            return ""
+          }
+          return fmt ? startMoment.format(fmt) : formatTime(event.start)
+        case "eventEndTime":
+          if (event.allDay || !endMoment || !event.end) {
+            return ""
+          }
+          return fmt ? endMoment.format(fmt) : formatTime(event.end)
+        default:
+          return match
       }
-      return fmt ? endMoment.format(fmt) : formatTime(event.end)
     }
   )
 
   const values: Record<string, string> = {
-    location: event.location ?? "",
-    description: event.description ?? "",
-    attendees: attendees.map((a) => a.wikiLink ?? a.name).join(", "),
-    // Leading newline so inline use (`attendees: {{attendeesYaml}}`) expands
-    // to a properly-indented YAML block. Empty stays empty so the inline
-    // form renders as `attendees: ` (null) instead of a dangling newline.
-    attendeesYaml:
+    eventTitle: cleanTitle(event.title),
+    eventLocation: event.location ?? "",
+    eventDescription: event.description ?? "",
+    eventAttendees: attendees.map((a) => a.wikiLink ?? a.name).join(", "),
+    // Leading newline so inline use (`attendees: {{eventAttendeesYaml}}`)
+    // expands to a properly-indented YAML block. Empty stays empty so the
+    // inline form renders as `attendees: ` (null) instead of a dangling
+    // newline.
+    eventAttendeesYaml:
       attendees.length === 0
         ? ""
         : "\n" +
@@ -92,32 +111,33 @@ export function renderCustomPlaceholders(
 
   // Unknown placeholders are left untouched so typos are visible instead of
   // silently dropped. Matches the behavior of Obsidian's core Templates plugin.
-  return withEndTime.replace(/\{\{(\w+)\}\}/g, (match, key: string) =>
+  return withFormatted.replace(/\{\{(\w+)\}\}/g, (match, key: string) =>
     key in values ? values[key] : match
   )
 }
 
 // Replicates the core Templates plugin's substitutions for {{title}},
-// {{date}}, {{date:FORMAT}}, {{time}}, {{time:FORMAT}}. Only used when the
-// core plugin isn't enabled.
-function renderBuiltinPlaceholders(
+// {{date}}, {{date:FORMAT}}, {{time}}, {{time:FORMAT}}. {{title}} maps to the
+// note's filename basename (matching the core plugin); {{date}} / {{time}} use
+// the current clock with sensible defaults that match the core plugin's
+// out-of-the-box behavior.
+function renderCoreEquivalentPlaceholders(
   template: string,
-  event: ScheduleEvent
+  notePath: string
 ): string {
-  const startMoment = moment(event.start)
+  const basename = notePath.split("/").pop()?.replace(/\.md$/i, "") ?? ""
+  const now = moment(new Date())
+
   return template.replace(
     /\{\{(title|date|time)(?::([^}]+))?\}\}/g,
     (match, key: string, fmt: string | undefined) => {
       switch (key) {
         case "title":
-          return cleanTitle(event.title)
+          return basename
         case "date":
-          return fmt ? startMoment.format(fmt) : formatDate(event.start)
+          return now.format(fmt ?? "YYYY-MM-DD")
         case "time":
-          if (event.allDay) {
-            return ""
-          }
-          return fmt ? startMoment.format(fmt) : formatTime(event.start)
+          return now.format(fmt ?? "HH:mm")
         default:
           return match
       }
