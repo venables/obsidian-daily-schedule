@@ -16,13 +16,12 @@
     "lint:fixall": "bun run lint:fix -- --fix-dangerously"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
     "ical.js": "^2.2.1",
-    "obsidian": "^1.7.2",
+    "obsidian": "^1.12.3",
     "oxfmt": "latest",
     "oxlint": "latest",
     "oxlint-tsgolint": "latest",
     "tsdown": "latest",
-    "typescript": "^5.5.0"
+    "typescript": "^6"
   }
 }

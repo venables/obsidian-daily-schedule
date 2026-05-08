@@ -7,13 +7,8 @@ import {
 } from "./calendar"
 import { formatDate, formatTime } from "./helpers"
 import type DailySchedulePlugin from "./main"
-import {
-  buildMeetingNotePath,
-  buildMeetingNoteContent,
-  createOrOpenMeetingNote
-} from "./meeting"
+import { buildMeetingNotePath, createMeetingNote } from "./meeting"
 import { buildEmailMap, resolveAttendees, type EmailMap } from "./people"
-import { loadTemplate, renderMeetingTemplate } from "./template"
 
 declare module "obsidian" {
   interface App {
@@ -279,11 +274,12 @@ export class ScheduleView extends ItemView {
       settings.myEmails
     )
 
-    const template = await loadTemplate(this.app, settings.meetingTemplatePath)
-    const content = template
-      ? renderMeetingTemplate(template, event, attendees)
-      : buildMeetingNoteContent(event, attendees)
-
-    await createOrOpenMeetingNote(this.app, notePath, content)
+    await createMeetingNote(
+      this.app,
+      notePath,
+      settings.meetingTemplatePath,
+      event,
+      attendees
+    )
   }
 }
