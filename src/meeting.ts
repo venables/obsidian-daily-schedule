@@ -160,25 +160,35 @@ async function createWithCoreTemplate(
     await coreApi.insertTemplate(templateFile)
 
     // insertTemplate writes into the editor buffer, not directly to disk, so
-    // we must read/write through the editor or the second pass will see our
-    // empty stub. Match the editor by file path because activeEditor can
-    // shift if the user clicked away while we awaited.
-    const view = app.workspace.getActiveViewOfType(MarkdownView)
-    if (view?.file?.path === created.path) {
-      const content = view.editor.getValue()
-      const replaced = renderEventPlaceholders(content, event, attendees)
-      if (replaced !== content) {
-        view.editor.setValue(replaced)
-      }
-    } else {
-      console.warn(
-        "[daily-schedule] Active editor changed during template insertion; event placeholders may not be substituted"
+    // the second pass must read/write through the editor. Read from the
+    // leaf we opened rather than the active view -- a fast user click can
+    // shift the active view between awaits, and silently leaving the note
+    // with un-substituted placeholders is the bug we're trying to avoid.
+    const view = openedLeaf.view
+    if (!(view instanceof MarkdownView) || view.file?.path !== created.path) {
+      throw new Error(
+        `Editor for new note ${notePath} is unavailable after insertTemplate`
       )
     }
+    const content = view.editor.getValue()
+    const replaced = renderEventPlaceholders(content, event, attendees)
+    if (replaced !== content) {
+      view.editor.setValue(replaced)
+    }
+    // Force persistence so the rendered note lands on disk immediately
+    // rather than waiting for the editor's autosave debounce. A user
+    // closing the tab right after creation would otherwise lose the
+    // second-pass substitutions.
+    await view.save()
   } catch (err) {
-    // Detach the leaf before deleting so the editor doesn't hold the soon-to-
-    // be-removed file open as a broken tab.
-    openedLeaf?.detach()
+    // Detach the leaf before deleting so the editor doesn't hold the soon-
+    // to-be-removed file open as a broken tab. detach itself can throw if
+    // the leaf is already gone -- swallow that so we still attempt deletion.
+    try {
+      openedLeaf?.detach()
+    } catch (detachErr) {
+      console.error("[daily-schedule] Failed to detach leaf:", detachErr)
+    }
     await app.vault.delete(created).catch((delErr) => {
       console.error("[daily-schedule] Failed to clean up empty stub:", delErr)
     })
