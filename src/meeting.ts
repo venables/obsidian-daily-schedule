@@ -212,6 +212,28 @@ async function createWithCoreTemplate(
     })
     throw err
   }
+
+  // Re-open the now-populated file so the MarkdownView reinitializes against
+  // content that has frontmatter. Without this, the Properties widget never
+  // mounts (we opened against an empty stub) and stays hidden until the user
+  // clicks away and back. Runs after the cleanup try/catch and is best-effort:
+  // the file is already saved, so a failure here only means a missing widget,
+  // not data loss. Skip if the user clicked the leaf onto a different file
+  // during the prior awaits -- yanking it back would clobber their navigation.
+  try {
+    const refreshView = openedLeaf.view
+    if (
+      refreshView instanceof MarkdownView &&
+      refreshView.file?.path === created.path
+    ) {
+      await openedLeaf.openFile(created)
+    }
+  } catch (refreshErr) {
+    console.error(
+      "[daily-schedule] Failed to refresh view after template insert:",
+      refreshErr
+    )
+  }
 }
 
 async function renderFallbackContent(
