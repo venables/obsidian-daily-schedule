@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsdown && cp src/manifest.json src/styles.css dist/",
-    "check": "pnpm format:check && pnpm lint",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "deploy": "scripts/deploy.sh",
     "dev": "cp src/manifest.json src/styles.css dist/ && tsdown --watch",
     "fix": "pnpm lint:fix && pnpm format",
@@ -13,7 +13,9 @@
     "format:check": "pnpm format --check",
     "lint": "oxlint",
     "lint:fix": "pnpm lint --fix --fix-suggestions",
-    "lint:fixall": "pnpm lint:fix --fix-dangerously"
+    "lint:fixall": "pnpm lint:fix --fix-dangerously",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "ical.js": "^2.2.1",
@@ -23,7 +25,8 @@
     "oxlint": "latest",
     "oxlint-tsgolint": "latest",
     "tsdown": "latest",
-    "typescript": "^6"
+    "typescript": "^6",
+    "vitest": "^4.1.10"
   },
   "packageManager": "pnpm@11.8.0"
 }

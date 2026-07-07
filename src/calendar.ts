@@ -184,7 +184,7 @@ function expandRecurringEvent(
   return results
 }
 
-function expandEventsForToday(
+export function expandEventsForToday(
   root: ICAL.Component,
   today: Date,
   calendarName: string,
