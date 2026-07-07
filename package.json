@@ -5,23 +5,25 @@
   "type": "module",
   "scripts": {
     "build": "tsdown && cp src/manifest.json src/styles.css dist/",
-    "check": "bun run format:check && bun run lint",
+    "check": "pnpm format:check && pnpm lint",
     "deploy": "scripts/deploy.sh",
     "dev": "cp src/manifest.json src/styles.css dist/ && tsdown --watch",
-    "fix": "bun run lint:fix && bun run format",
+    "fix": "pnpm lint:fix && pnpm format",
     "format": "oxfmt",
-    "format:check": "bun run format -- --check",
+    "format:check": "pnpm format --check",
     "lint": "oxlint",
-    "lint:fix": "bun run lint -- --fix --fix-suggestions",
-    "lint:fixall": "bun run lint:fix -- --fix-dangerously"
+    "lint:fix": "pnpm lint --fix --fix-suggestions",
+    "lint:fixall": "pnpm lint:fix --fix-dangerously"
   },
   "devDependencies": {
     "ical.js": "^2.2.1",
+    "moment": "2.29.4",
     "obsidian": "^1.12.3",
     "oxfmt": "latest",
     "oxlint": "latest",
     "oxlint-tsgolint": "latest",
     "tsdown": "latest",
     "typescript": "^6"
-  }
+  },
+  "packageManager": "pnpm@11.8.0"
 }
