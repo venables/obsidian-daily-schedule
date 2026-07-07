@@ -113,8 +113,10 @@ function renderEventPlaceholders(
 
   // Unknown placeholders are left untouched so typos are visible instead of
   // silently dropped. Matches the behavior of Obsidian's core Templates plugin.
+  // hasOwn (not `in`) so inherited keys like {{toString}} stay untouched rather
+  // than resolving to Object.prototype members.
   return withFormatted.replace(/\{\{(\w+)\}\}/g, (match, key: string) =>
-    key in values ? values[key] : match
+    Object.hasOwn(values, key) ? values[key] : match
   )
 }
 

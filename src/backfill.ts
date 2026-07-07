@@ -29,8 +29,9 @@ export async function backfillAttendeeLinks(
       continue
     }
 
-    // eslint-disable-next-line no-await-in-loop -- sequential writes avoid
-    // racing Obsidian's file handle; total I/O is bounded by match count
+    // Sequential writes avoid racing Obsidian's file handle; total I/O is
+    // bounded by match count.
+    // eslint-disable-next-line no-await-in-loop
     const original = await app.vault.read(file)
     const { content, changes } = rewriteAttendeesBlock(original, emailMap)
     if (changes === 0) {
