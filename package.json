@@ -15,7 +15,8 @@
     "lint:fix": "pnpm lint --fix --fix-suggestions",
     "lint:fixall": "pnpm lint:fix --fix-dangerously",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "version:bump": "node scripts/bump-version.ts"
   },
   "devDependencies": {
     "ical.js": "^2.2.1",
