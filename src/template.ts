@@ -2,6 +2,7 @@ import type { Moment } from "moment"
 import { App, TFile, moment as momentModule } from "obsidian"
 
 import type { ScheduleEvent } from "./calendar"
+import { NO_CORE_FORMATS, type CoreTemplatesFormats } from "./coreTemplates"
 import { cleanTitle, formatDate, formatTime } from "./helpers"
 import type { ResolvedAttendee } from "./people"
 
@@ -45,23 +46,24 @@ export async function loadTemplate(
   }
 }
 
-// Full render used when the core Templates plugin isn't available -- handles
-// both event* placeholders AND replicates the core plugin's {{title}}, {{date}},
-// {{time}} (with optional :FORMAT) so a single template renders identically
-// either way.
+// Full render of a meeting template -- handles the event* placeholders AND
+// replicates the core Templates plugin's {{title}}, {{date}}, {{time}} (with
+// optional :FORMAT). Pass the core plugin's configured formats (see
+// getCoreTemplatesFormats) so the output matches what the core plugin itself
+// would produce; without them the core plugin's out-of-the-box defaults apply.
 export function renderMeetingTemplate(
   template: string,
   notePath: string,
   event: ScheduleEvent,
-  attendees: readonly ResolvedAttendee[]
+  attendees: readonly ResolvedAttendee[],
+  formats: CoreTemplatesFormats = NO_CORE_FORMATS
 ): string {
-  const withCore = renderCoreEquivalentPlaceholders(template, notePath)
+  const withCore = renderCoreEquivalentPlaceholders(template, notePath, formats)
   return renderEventPlaceholders(withCore, event, attendees)
 }
 
-// Substitutes only the event* placeholders. Used after the core plugin's
-// insertTemplate has filled in {{title}} / {{date}} / {{time}}.
-export function renderEventPlaceholders(
+// Substitutes only the event* placeholders.
+function renderEventPlaceholders(
   template: string,
   event: ScheduleEvent,
   attendees: readonly ResolvedAttendee[]
@@ -119,11 +121,12 @@ export function renderEventPlaceholders(
 // Replicates the core Templates plugin's substitutions for {{title}},
 // {{date}}, {{date:FORMAT}}, {{time}}, {{time:FORMAT}}. {{title}} maps to the
 // note's filename basename (matching the core plugin); {{date}} / {{time}} use
-// the current clock with sensible defaults that match the core plugin's
-// out-of-the-box behavior.
+// the current clock, formatted with the core plugin's configured formats when
+// available and its out-of-the-box defaults otherwise.
 function renderCoreEquivalentPlaceholders(
   template: string,
-  notePath: string
+  notePath: string,
+  formats: CoreTemplatesFormats
 ): string {
   const basename = notePath.split("/").pop()?.replace(/\.md$/i, "") ?? ""
   const now = moment(new Date())
@@ -135,9 +138,9 @@ function renderCoreEquivalentPlaceholders(
         case "title":
           return basename
         case "date":
-          return now.format(fmt ?? "YYYY-MM-DD")
+          return now.format(fmt ?? formats.dateFormat ?? "YYYY-MM-DD")
         case "time":
-          return now.format(fmt ?? "HH:mm")
+          return now.format(fmt ?? formats.timeFormat ?? "HH:mm")
         default:
           return match
       }
