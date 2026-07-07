@@ -22,7 +22,7 @@ function expand(root: ICAL.Component): readonly ScheduleEvent[] {
   return expandEventsForToday(root, TODAY, "Work", "#abc")
 }
 
-describe("expandEventsFortoday: single events", () => {
+describe("expandEventsForToday: single events", () => {
   test("returns a non-recurring event scheduled today", () => {
     const events = expand(
       ics(
