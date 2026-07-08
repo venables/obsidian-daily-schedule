@@ -4,6 +4,15 @@ import { requestUrl } from "obsidian"
 import { isSameDay } from "./helpers"
 import type { CalendarSource } from "./settings"
 
+// How far before today to begin iterating a recurring series. Starting at the
+// series DTSTART means a years-old daily event walks thousands of occurrences
+// on every refresh; a bounded lookback makes expansion O(window). The lookback
+// (rather than today itself) matters because iteration positions are the
+// occurrences' ORIGINAL recurrence times, and a RECURRENCE-ID override can move
+// an earlier occurrence onto today -- an occurrence moved by more than this many
+// days onto today is the accepted trade-off.
+const RRULE_LOOKBACK_DAYS = 32
+
 export interface Attendee {
   readonly email: string
   readonly name: string | null
@@ -152,10 +161,31 @@ function expandRecurringEvent(
   const results: ScheduleEvent[] = []
   const endTime = ICAL.Time.fromJSDate(todayEnd, false)
 
+  // Cheaply skip occurrences whose original recurrence time is before the
+  // lookback window. We must iterate from the true series start -- ICAL's
+  // iterator(startTime) re-anchors the whole recurrence to the given time
+  // (using it as DTSTART), which would corrupt the wall-clock and BYDAY rules
+  // -- but resolving each occurrence (getOccurrenceDetails, which walks
+  // overrides) is the expensive part, so we gate that on the window. Skipping
+  // by original position is what makes an occurrence moved from before the
+  // window onto today the accepted trade-off.
+  const windowStart = ICAL.Time.fromJSDate(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() - RRULE_LOOKBACK_DAYS
+    ),
+    false
+  )
+
   try {
     const iter = master.iterator()
     let next = iter.next()
     while (next && next.compare(endTime) < 0) {
+      if (next.compare(windowStart) < 0) {
+        next = iter.next()
+        continue
+      }
       const details = master.getOccurrenceDetails(next)
       const occurrenceEvent = details.item
       if (readStatus(occurrenceEvent.component) !== "CANCELLED") {

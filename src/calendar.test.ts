@@ -166,6 +166,87 @@ describe("expandEventsForToday: recurrence", () => {
   })
 })
 
+describe("expandEventsForToday: recurrence windowing", () => {
+  test("still returns today's occurrence for a years-old daily series", () => {
+    const events = expand(
+      ics(
+        [
+          "UID:a@x",
+          "SUMMARY:Ancient standup",
+          "DTSTART:20230101T090000",
+          "RRULE:FREQ=DAILY"
+        ].join("\n")
+      )
+    )
+    expect(events).toHaveLength(1)
+    expect(events[0].start.getDate()).toBe(7)
+    expect(events[0].start.getHours()).toBe(9)
+  })
+
+  test("catches an override that moves an occurrence from within the lookback onto today", () => {
+    // Original recurrence 10 days ago, moved onto today: falls inside the
+    // 32-day lookback window, so it is still found.
+    const events = expand(
+      ics(
+        [
+          "UID:a@x",
+          "SUMMARY:Daily standup",
+          "DTSTART:20230101T090000",
+          "RRULE:FREQ=DAILY"
+        ].join("\n"),
+        [
+          "UID:a@x",
+          "SUMMARY:Moved forward",
+          "RECURRENCE-ID:20260627T090000",
+          "DTSTART:20260707T083000"
+        ].join("\n")
+      )
+    )
+    const moved = events.find((e) => e.title === "Moved forward")
+    expect(moved).toBeDefined()
+    expect(moved?.start.getHours()).toBe(8)
+    expect(moved?.start.getMinutes()).toBe(30)
+  })
+
+  test("does not return an override moved from before the lookback window (documented trade-off)", () => {
+    // Original recurrence 60 days ago (> RRULE_LOOKBACK_DAYS), moved onto
+    // today. Iteration starts inside the window, so this occurrence's original
+    // position is never visited and the moved event does not appear. This test
+    // pins the accepted limitation of the windowed expansion.
+    const events = expand(
+      ics(
+        [
+          "UID:a@x",
+          "SUMMARY:Daily standup",
+          "DTSTART:20230101T090000",
+          "RRULE:FREQ=DAILY"
+        ].join("\n"),
+        [
+          "UID:a@x",
+          "SUMMARY:Moved from long ago",
+          "RECURRENCE-ID:20260508T090000",
+          "DTSTART:20260707T083000"
+        ].join("\n")
+      )
+    )
+    expect(events.some((e) => e.title === "Moved from long ago")).toBe(false)
+  })
+
+  test("handles a weekly series that ended in the past without throwing", () => {
+    const events = expand(
+      ics(
+        [
+          "UID:a@x",
+          "SUMMARY:Old weekly",
+          "DTSTART:20250101T090000",
+          "RRULE:FREQ=WEEKLY;UNTIL=20250201T090000"
+        ].join("\n")
+      )
+    )
+    expect(events).toHaveLength(0)
+  })
+})
+
 describe("filterIgnoredEvents", () => {
   function titled(title: string): ScheduleEvent {
     return {
