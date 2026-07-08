@@ -35,5 +35,11 @@
     "typeAware": true,
     "typeCheck": true
   },
-  "ignorePatterns": [".claude", "main.js", "node_modules"]
+  "ignorePatterns": [
+    ".claude",
+    "main.js",
+    "node_modules",
+    "test",
+    "*.config.ts"
+  ]
 }
