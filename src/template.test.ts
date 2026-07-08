@@ -123,4 +123,15 @@ describe("renderMeetingTemplate core placeholders", () => {
       "{{nope}}"
     )
   })
+
+  test("does not resolve inherited object keys like {{toString}}", () => {
+    expect(
+      renderMeetingTemplate(
+        "{{toString}} {{eventTitle}}",
+        path,
+        makeEvent(),
+        []
+      )
+    ).toBe("{{toString}} Design Review")
+  })
 })
