@@ -46,13 +46,13 @@ BRAT will keep it updated whenever a new release is tagged.
 
 ### Option B — Manual build from source
 
-Requires [bun](https://bun.sh).
+Requires [pnpm](https://pnpm.io).
 
 ```bash
 git clone https://github.com/venables/obsidian-daily-schedule.git
 cd obsidian-daily-schedule
-bun install
-bun run build
+pnpm install
+pnpm build
 ```
 
 This produces a `dist/` folder with everything the plugin needs. Copy it into
@@ -115,8 +115,9 @@ Public Calendar → copy the `webcal://` URL and change `webcal://` to `https://
 
 ### Template placeholders
 
-When the **core Obsidian Templates plugin** is enabled (it is by default), new
-notes are run through it so its placeholders work:
+The **core Obsidian Templates plugin's** placeholders work in meeting templates.
+When the core plugin is enabled (it is by default), its configured date and time
+formats are honored:
 
 | Placeholder       | Replaced with                                       |
 | ----------------- | --------------------------------------------------- |
@@ -144,8 +145,8 @@ pull from the calendar event you clicked:
 | `{{eventAttendeesYaml}}`  | YAML list of attendees, suitable for frontmatter |
 
 If the core Templates plugin is disabled, `{{title}}` / `{{date}}` / `{{time}}`
-still work — this plugin falls back to a Moment.js-based renderer that mirrors
-the core plugin's behavior, so the same template renders identically either way.
+still work — they render with the core plugin's out-of-the-box formats
+(`YYYY-MM-DD` and `HH:mm`), so the same template renders either way.
 
 Unknown placeholders are left untouched (matching the core plugin), so typos are
 visible rather than silently dropped.
@@ -226,11 +227,11 @@ There's also a ribbon icon (calendar-clock) for opening the view.
 ## Development
 
 ```bash
-bun install
-bun run dev        # tsdown watch mode
-bun run build      # one-shot production build
-bun run check      # format:check + lint
-bun run fix        # format + auto-fix lint
+pnpm install
+pnpm dev        # tsdown watch mode
+pnpm build      # one-shot production build
+pnpm check      # format:check + lint
+pnpm fix        # format + auto-fix lint
 ```
 
 For the fastest dev loop, symlink (or clone directly into)
