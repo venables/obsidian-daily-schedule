@@ -7,7 +7,7 @@
     "build": "tsdown && cp manifest.json src/styles.css dist/",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "deploy": "scripts/deploy.sh",
-    "dev": "cp manifest.json src/styles.css dist/ && tsdown --watch",
+    "dev": "cp manifest.json src/styles.css dist/ && tsdown --watch --sourcemap --no-minify",
     "fix": "pnpm lint:fix && pnpm format",
     "format": "oxfmt",
     "format:check": "pnpm format --check",
