@@ -1,5 +1,7 @@
 import { App, TFile, TFolder } from "obsidian"
 
+import { vaultPath } from "./helpers"
+
 export type EmailMap = ReadonlyMap<string, string>
 
 export function buildEmailMap(
@@ -9,7 +11,11 @@ export function buildEmailMap(
   const map = new Map<string, string>()
 
   for (const folderPath of peopleFolders) {
-    const folder = app.vault.getAbstractFileByPath(folderPath)
+    const normalized = vaultPath(folderPath)
+    if (!normalized) {
+      continue
+    }
+    const folder = app.vault.getAbstractFileByPath(normalized)
     if (!(folder instanceof TFolder)) {
       continue
     }

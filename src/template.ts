@@ -3,7 +3,7 @@ import { App, TFile, moment as momentModule } from "obsidian"
 
 import type { ScheduleEvent } from "./calendar"
 import { NO_CORE_FORMATS, type CoreTemplatesFormats } from "./coreTemplates"
-import { cleanTitle, formatDate, formatTime } from "./helpers"
+import { cleanTitle, formatDate, formatTime, vaultPath } from "./helpers"
 import type { ResolvedAttendee } from "./people"
 
 // Mirrors the moment cast in helpers.ts -- runtime is a callable fn but the TS
@@ -30,11 +30,11 @@ export async function loadTemplate(
   app: App,
   path: string
 ): Promise<string | null> {
-  const trimmed = path.trim()
-  if (!trimmed) {
+  const normalized = vaultPath(path)
+  if (!normalized) {
     return null
   }
-  const file = app.vault.getAbstractFileByPath(trimmed)
+  const file = app.vault.getAbstractFileByPath(normalized)
   if (!(file instanceof TFile)) {
     return null
   }

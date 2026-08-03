@@ -1,5 +1,6 @@
 import { App, TFile, TFolder } from "obsidian"
 
+import { vaultPath } from "./helpers"
 import { buildEmailMap, type EmailMap } from "./people"
 
 export interface BackfillResult {
@@ -14,7 +15,7 @@ export async function backfillAttendeeLinks(
   peopleFolders: readonly string[]
 ): Promise<BackfillResult> {
   const emailMap = buildEmailMap(app, peopleFolders)
-  const folder = app.vault.getAbstractFileByPath(meetingFolderPath)
+  const folder = app.vault.getAbstractFileByPath(vaultPath(meetingFolderPath))
   if (!(folder instanceof TFolder) || emailMap.size === 0) {
     return { filesScanned: 0, filesUpdated: 0, attendeesRelinked: 0 }
   }

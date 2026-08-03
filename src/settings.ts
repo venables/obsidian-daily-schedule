@@ -112,10 +112,10 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
       true
     )
 
-    containerEl.createEl("h2", { text: "Calendars" })
+    new Setting(containerEl).setName("Calendars").setHeading()
     this.renderCalendarList(containerEl)
 
-    containerEl.createEl("h2", { text: "Meeting Notes" })
+    new Setting(containerEl).setName("Meeting notes").setHeading()
 
     new Setting(containerEl)
       .setName("Meeting note path")
@@ -184,7 +184,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
           .onChange(saveMyEmails)
       )
 
-    containerEl.createEl("h2", { text: "Display" })
+    new Setting(containerEl).setName("Display").setHeading()
 
     new Setting(containerEl)
       .setName("Refresh interval")
@@ -218,7 +218,7 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
           .onChange(saveIgnorePatterns)
       )
 
-    containerEl.createEl("h2", { text: "People Lookup" })
+    new Setting(containerEl).setName("People lookup").setHeading()
     containerEl.createEl("p", {
       cls: "setting-item-description",
       text: "Folders to scan for person notes with email frontmatter. Attendees whose email appears in a person note's frontmatter are replaced with a wikilink."
@@ -364,9 +364,7 @@ class CalendarModal extends Modal {
 
   onOpen() {
     const { contentEl } = this
-    contentEl.createEl("h3", {
-      text: this.index >= 0 ? "Edit Calendar" : "Add Calendar"
-    })
+    this.setTitle(this.index >= 0 ? "Edit calendar" : "Add calendar")
 
     new Setting(contentEl).setName("Name").addText((text) =>
       text

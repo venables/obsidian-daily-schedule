@@ -43,7 +43,7 @@ export class ScheduleView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "Today's Schedule"
+    return "Today's schedule"
   }
 
   getIcon(): string {
@@ -295,7 +295,7 @@ export class ScheduleView extends ItemView {
       })
 
       if (event.calendarColor) {
-        card.style.borderLeftColor = event.calendarColor
+        card.style.setProperty("--ds-calendar-color", event.calendarColor)
       }
 
       const timeText = event.allDay
