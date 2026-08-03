@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsdown && cp src/manifest.json src/styles.css dist/",
+    "build": "tsdown && cp manifest.json src/styles.css dist/",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "deploy": "scripts/deploy.sh",
-    "dev": "cp src/manifest.json src/styles.css dist/ && tsdown --watch",
+    "dev": "cp manifest.json src/styles.css dist/ && tsdown --watch",
     "fix": "pnpm lint:fix && pnpm format",
     "format": "oxfmt",
     "format:check": "pnpm format --check",
