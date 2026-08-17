@@ -82,6 +82,16 @@ export async function ensureFolderExists(
   }
 }
 
+export function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+export function addDays(date: Date, days: number): Date {
+  const shifted = new Date(date.getTime())
+  shifted.setDate(shifted.getDate() + days)
+  return shifted
+}
+
 export function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&

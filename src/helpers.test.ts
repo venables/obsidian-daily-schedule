@@ -1,11 +1,13 @@
 import { describe, expect, test } from "vitest"
 
 import {
+  addDays,
   cleanTitle,
   formatDate,
   isSameDay,
   meetingNotePath,
-  removeEmoji
+  removeEmoji,
+  startOfDay
 } from "./helpers"
 
 describe("removeEmoji", () => {
@@ -45,6 +47,36 @@ describe("isSameDay", () => {
     expect(isSameDay(new Date(2026, 6, 7, 23), new Date(2026, 6, 8, 1))).toBe(
       false
     )
+  })
+})
+
+describe("startOfDay", () => {
+  test("drops the time of day", () => {
+    expect(startOfDay(new Date(2026, 6, 7, 14, 32, 9))).toEqual(
+      new Date(2026, 6, 7)
+    )
+  })
+})
+
+describe("addDays", () => {
+  test("moves forward across a month boundary", () => {
+    expect(addDays(new Date(2026, 6, 31), 1)).toEqual(new Date(2026, 7, 1))
+  })
+
+  test("moves backward across a year boundary", () => {
+    expect(addDays(new Date(2026, 0, 1), -1)).toEqual(new Date(2025, 11, 31))
+  })
+
+  test("keeps the time of day", () => {
+    expect(addDays(new Date(2026, 6, 7, 9, 30), 2)).toEqual(
+      new Date(2026, 6, 9, 9, 30)
+    )
+  })
+
+  test("does not mutate its input", () => {
+    const original = new Date(2026, 6, 7)
+    addDays(original, 5)
+    expect(original).toEqual(new Date(2026, 6, 7))
   })
 })
 
