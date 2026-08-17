@@ -5,7 +5,7 @@ import {
   filterIgnoredEvents,
   type ScheduleEvent
 } from "./calendar"
-import { formatDate, formatTime } from "./helpers"
+import { addDays, formatDate, formatTime, startOfDay } from "./helpers"
 import type DailySchedulePlugin from "./main"
 import { buildMeetingNotePath, createMeetingNote } from "./meeting"
 import { buildEmailMap, resolveAttendees, type EmailMap } from "./people"
@@ -23,7 +23,13 @@ export const VIEW_TYPE = "daily-schedule-view"
 
 export class ScheduleView extends ItemView {
   private events: readonly ScheduleEvent[] = []
-  private lastFetchDate = ""
+  private eventsDate = ""
+  // Days away from today, not an absolute date, so offset 0 still means
+  // "today" after the clock rolls past midnight with the view left open.
+  private dayOffset = 0
+  // Identifies the newest in-flight fetch, so a slow response for a day the
+  // user has already navigated away from cannot overwrite a newer one.
+  private fetchToken = 0
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -55,11 +61,16 @@ export class ScheduleView extends ItemView {
     // Nothing to clean up
   }
 
-  async refresh(): Promise<void> {
-    const today = formatDate(new Date())
+  private get selectedDate(): Date {
+    return addDays(startOfDay(new Date()), this.dayOffset)
+  }
 
-    // If the day changed, clear stale events
-    if (this.lastFetchDate !== today) {
+  async refresh(): Promise<void> {
+    const target = this.selectedDate
+    const targetKey = formatDate(target)
+
+    // If the selected day changed, clear events for the previous day
+    if (this.eventsDate !== targetKey) {
       this.events = []
     }
 
@@ -77,11 +88,20 @@ export class ScheduleView extends ItemView {
       this.renderLoading()
     }
 
+    const token = ++this.fetchToken
+
     try {
-      this.events = await fetchCalendarEvents(settings.calendars)
-      this.lastFetchDate = today
+      const fetched = await fetchCalendarEvents(settings.calendars, target)
+      if (token !== this.fetchToken) {
+        return
+      }
+      this.events = fetched
+      this.eventsDate = targetKey
     } catch (err) {
       console.error("[daily-schedule] Fetch failed:", err)
+      if (token !== this.fetchToken) {
+        return
+      }
       if (this.events.length === 0) {
         this.renderError()
         return
@@ -90,6 +110,14 @@ export class ScheduleView extends ItemView {
     }
 
     this.rerender()
+  }
+
+  private goToDay(offset: number): void {
+    if (offset === this.dayOffset) {
+      return
+    }
+    this.dayOffset = offset
+    void this.refresh()
   }
 
   rerender(): void {
@@ -149,12 +177,16 @@ export class ScheduleView extends ItemView {
   }
 
   private renderHeader(container: HTMLElement): void {
-    const now = new Date()
-    const dateStr = formatDate(now)
-    const dayName = now.toLocaleDateString([], { weekday: "long" })
+    const selected = this.selectedDate
+    const dateStr = formatDate(selected)
+    const dayName = selected.toLocaleDateString([], { weekday: "long" })
 
     const header = container.createEl("div", { cls: "ds-header" })
-    header.createEl("span", { cls: "ds-date", text: dateStr })
+
+    const left = header.createEl("div", { cls: "ds-header-left" })
+    this.renderNavButton(left, "chevron-left", "Previous day", -1)
+    this.renderDate(left, dateStr)
+    this.renderNavButton(left, "chevron-right", "Next day", 1)
 
     const right = header.createEl("div", { cls: "ds-header-right" })
     const refreshBtn = right.createEl("button", {
@@ -173,6 +205,42 @@ export class ScheduleView extends ItemView {
     right.createEl("span", { cls: "ds-day", text: dayName })
   }
 
+  // On any day but today the date doubles as the way back to today, so the
+  // header stays on one line in a narrow sidebar.
+  private renderDate(container: HTMLElement, dateStr: string): void {
+    if (this.dayOffset === 0) {
+      container.createEl("span", { cls: "ds-date", text: dateStr })
+      return
+    }
+
+    const btn = container.createEl("button", {
+      cls: "ds-date ds-date-btn",
+      text: dateStr,
+      attr: { "aria-label": "Back to today" }
+    })
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation()
+      this.goToDay(0)
+    })
+  }
+
+  private renderNavButton(
+    container: HTMLElement,
+    icon: string,
+    label: string,
+    delta: number
+  ): void {
+    const btn = container.createEl("button", {
+      cls: "ds-nav-btn clickable-icon",
+      attr: { "aria-label": label }
+    })
+    setIcon(btn, icon)
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation()
+      this.goToDay(this.dayOffset + delta)
+    })
+  }
+
   private renderEvents(): void {
     const { contentEl } = this
     const { settings } = this.plugin
@@ -183,7 +251,10 @@ export class ScheduleView extends ItemView {
     const visible = filterIgnoredEvents(this.events, settings.ignorePatterns)
 
     if (visible.length === 0) {
-      contentEl.createEl("p", { cls: "ds-message", text: "No events today." })
+      contentEl.createEl("p", {
+        cls: "ds-message",
+        text: this.dayOffset === 0 ? "No events today." : "No events this day."
+      })
       return
     }
 

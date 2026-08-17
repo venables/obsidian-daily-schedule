@@ -6,7 +6,8 @@
 .ds-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--background-modifier-border);
@@ -17,6 +18,7 @@
   color: var(--text-normal);
 }
 
+.ds-header-left,
 .ds-header-right {
   display: flex;
   align-items: center;
@@ -28,7 +30,8 @@
   font-size: var(--font-ui-smaller);
 }
 
-.ds-refresh-btn {
+.ds-refresh-btn,
+.ds-nav-btn {
   padding: 2px;
   height: auto;
   min-height: 0;
@@ -42,13 +45,34 @@
   cursor: pointer;
 }
 
-.ds-refresh-btn:hover {
+.ds-refresh-btn:hover,
+.ds-nav-btn:hover {
   color: var(--text-normal);
 }
 
-.ds-refresh-btn svg {
+.ds-refresh-btn svg,
+.ds-nav-btn svg {
   width: 14px;
   height: 14px;
+}
+
+.ds-date-btn {
+  padding: 0;
+  height: auto;
+  min-height: 0;
+  line-height: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  background: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+.ds-date-btn:hover {
+  color: var(--text-accent);
+  background: none;
 }
 
 @keyframes ds-spin-once {

@@ -11,8 +11,10 @@ Today's meetings in your Obsidian sidebar — one click to a pre-filled note.
 
 - Pulls events from one or more **ICS calendar URLs** (Google Calendar, Apple
   Calendar, Outlook, Fastmail, etc.)
-- Expands recurring events for today (handles `RRULE`, including per-occurrence
-  start/end overrides)
+- Expands recurring events for the selected day (handles `RRULE`, including
+  per-occurrence start/end overrides)
+- Header arrows step to the previous or next day; tap the date to jump back to
+  today
 - Click an event to create a meeting note at
   `{base}/YYYY/MM/YYYY-MM-DD - Title.md` — or re-open it if it already exists
 - Resolves attendees to `[[Wikilinks]]` by matching email addresses against
