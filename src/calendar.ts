@@ -4,13 +4,13 @@ import { requestUrl } from "obsidian"
 import { isSameDay } from "./helpers"
 import type { CalendarSource } from "./settings"
 
-// How far before today to begin iterating a recurring series. Starting at the
-// series DTSTART means a years-old daily event walks thousands of occurrences
-// on every refresh; a bounded lookback makes expansion O(window). The lookback
-// (rather than today itself) matters because iteration positions are the
-// occurrences' ORIGINAL recurrence times, and a RECURRENCE-ID override can move
-// an earlier occurrence onto today -- an occurrence moved by more than this many
-// days onto today is the accepted trade-off.
+// How far before the target date to begin iterating a recurring series.
+// Starting at the series DTSTART means a years-old daily event walks thousands
+// of occurrences on every refresh; a bounded lookback makes expansion
+// O(window). The lookback (rather than the target date itself) matters because
+// iteration positions are the occurrences' ORIGINAL recurrence times, and a
+// RECURRENCE-ID override can move an earlier occurrence onto the target date --
+// an occurrence moved by more than this many days is the accepted trade-off.
 const RRULE_LOOKBACK_DAYS = 32
 
 export interface Attendee {
@@ -48,11 +48,11 @@ function allDayToLocalDate(time: ICAL.Time): Date {
   return new Date(time.year, time.month - 1, time.day)
 }
 
-function isAllDayOnDate(allDayDate: Date, today: Date): boolean {
+function isAllDayOnDate(allDayDate: Date, targetDate: Date): boolean {
   return (
-    allDayDate.getFullYear() === today.getFullYear() &&
-    allDayDate.getMonth() === today.getMonth() &&
-    allDayDate.getDate() === today.getDate()
+    allDayDate.getFullYear() === targetDate.getFullYear() &&
+    allDayDate.getMonth() === targetDate.getMonth() &&
+    allDayDate.getDate() === targetDate.getDate()
   )
 }
 
@@ -104,11 +104,11 @@ function buildScheduleEvent(
   }
 }
 
-function eventMatchesToday(start: ICAL.Time, today: Date): boolean {
+function eventMatchesDate(start: ICAL.Time, targetDate: Date): boolean {
   if (start.isDate) {
-    return isAllDayOnDate(allDayToLocalDate(start), today)
+    return isAllDayOnDate(allDayToLocalDate(start), targetDate)
   }
-  return isSameDay(start.toJSDate(), today)
+  return isSameDay(start.toJSDate(), targetDate)
 }
 
 interface UidGroup {
@@ -153,13 +153,13 @@ function buildEvent(
 
 function expandRecurringEvent(
   master: ICAL.Event,
-  today: Date,
-  todayEnd: Date,
+  targetDate: Date,
+  dayEnd: Date,
   calendarName: string,
   calendarColor: string
 ): readonly ScheduleEvent[] {
   const results: ScheduleEvent[] = []
-  const endTime = ICAL.Time.fromJSDate(todayEnd, false)
+  const endTime = ICAL.Time.fromJSDate(dayEnd, false)
 
   // Cheaply skip occurrences whose original recurrence time is before the
   // lookback window. We must iterate from the true series start -- ICAL's
@@ -168,12 +168,12 @@ function expandRecurringEvent(
   // -- but resolving each occurrence (getOccurrenceDetails, which walks
   // overrides) is the expensive part, so we gate that on the window. Skipping
   // by original position is what makes an occurrence moved from before the
-  // window onto today the accepted trade-off.
+  // window onto the target date the accepted trade-off.
   const windowStart = ICAL.Time.fromJSDate(
     new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate() - RRULE_LOOKBACK_DAYS
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      targetDate.getDate() - RRULE_LOOKBACK_DAYS
     ),
     false
   )
@@ -189,7 +189,7 @@ function expandRecurringEvent(
       const details = master.getOccurrenceDetails(next)
       const occurrenceEvent = details.item
       if (readStatus(occurrenceEvent.component) !== "CANCELLED") {
-        if (eventMatchesToday(details.startDate, today)) {
+        if (eventMatchesDate(details.startDate, targetDate)) {
           results.push(
             buildScheduleEvent(
               occurrenceEvent,
@@ -214,16 +214,16 @@ function expandRecurringEvent(
   return results
 }
 
-export function expandEventsForToday(
+export function expandEventsForDate(
   root: ICAL.Component,
-  today: Date,
+  targetDate: Date,
   calendarName: string,
   calendarColor: string
 ): readonly ScheduleEvent[] {
-  const todayEnd = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate() + 1
+  const dayEnd = new Date(
+    targetDate.getFullYear(),
+    targetDate.getMonth(),
+    targetDate.getDate() + 1
   )
 
   const results: ScheduleEvent[] = []
@@ -238,13 +238,13 @@ export function expandEventsForToday(
         results.push(
           ...expandRecurringEvent(
             master,
-            today,
-            todayEnd,
+            targetDate,
+            dayEnd,
             calendarName,
             calendarColor
           )
         )
-      } else if (eventMatchesToday(master.startDate, today)) {
+      } else if (eventMatchesDate(master.startDate, targetDate)) {
         results.push(
           buildScheduleEvent(
             master,
@@ -266,7 +266,7 @@ export function expandEventsForToday(
         continue
       }
       const ev = buildEvent(override, [])
-      if (eventMatchesToday(ev.startDate, today)) {
+      if (eventMatchesDate(ev.startDate, targetDate)) {
         results.push(
           buildScheduleEvent(
             ev,
@@ -285,10 +285,10 @@ export function expandEventsForToday(
 }
 
 export async function fetchCalendarEvents(
-  sources: readonly CalendarSource[]
+  sources: readonly CalendarSource[],
+  targetDate: Date = new Date()
 ): Promise<readonly ScheduleEvent[]> {
   const allEvents: ScheduleEvent[] = []
-  const today = new Date()
 
   const results = await Promise.allSettled(
     sources.map(async (source) => {
@@ -296,7 +296,7 @@ export async function fetchCalendarEvents(
       const jcal = ICAL.parse(response.text)
       const root = new ICAL.Component(jcal)
       registerTimezones(root)
-      return expandEventsForToday(root, today, source.name, source.color)
+      return expandEventsForDate(root, targetDate, source.name, source.color)
     })
   )
 

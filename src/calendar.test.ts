@@ -2,7 +2,7 @@ import ICAL from "ical.js"
 import { describe, expect, test } from "vitest"
 
 import {
-  expandEventsForToday,
+  expandEventsForDate,
   filterIgnoredEvents,
   type ScheduleEvent
 } from "./calendar"
@@ -19,10 +19,10 @@ function ics(...vevents: string[]): ICAL.Component {
 }
 
 function expand(root: ICAL.Component): readonly ScheduleEvent[] {
-  return expandEventsForToday(root, TODAY, "Work", "#abc")
+  return expandEventsForDate(root, TODAY, "Work", "#abc")
 }
 
-describe("expandEventsForToday: single events", () => {
+describe("expandEventsForDate: single events", () => {
   test("returns a non-recurring event scheduled today", () => {
     const events = expand(
       ics(
@@ -78,7 +78,7 @@ describe("expandEventsForToday: single events", () => {
   })
 })
 
-describe("expandEventsForToday: recurrence", () => {
+describe("expandEventsForDate: recurrence", () => {
   test("expands a daily RRULE to exactly one occurrence today, preserving wall-clock time", () => {
     const events = expand(
       ics(
@@ -166,7 +166,7 @@ describe("expandEventsForToday: recurrence", () => {
   })
 })
 
-describe("expandEventsForToday: recurrence windowing", () => {
+describe("expandEventsForDate: recurrence windowing", () => {
   test("still returns today's occurrence for a years-old daily series", () => {
     const events = expand(
       ics(
