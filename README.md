@@ -48,13 +48,13 @@ BRAT will keep it updated whenever a new release is tagged.
 
 ### Option B — Manual build from source
 
-Requires [pnpm](https://pnpm.io).
+Requires [Bun](https://bun.sh).
 
 ```bash
 git clone https://github.com/venables/obsidian-daily-schedule.git
 cd obsidian-daily-schedule
-pnpm install
-pnpm build
+bun install
+bun run build
 ```
 
 This produces a `dist/` folder with everything the plugin needs. Copy it into
@@ -229,11 +229,11 @@ There's also a ribbon icon (calendar-clock) for opening the view.
 ## Development
 
 ```bash
-pnpm install
-pnpm dev        # tsdown watch mode
-pnpm build      # one-shot production build
-pnpm check      # format:check + lint
-pnpm fix        # format + auto-fix lint
+bun install
+bun run dev        # tsdown watch mode
+bun run build      # one-shot production build
+bun run check      # format, lint, typecheck, test
+bun run fix        # format + auto-fix lint
 ```
 
 For the fastest dev loop, symlink (or clone directly into)
