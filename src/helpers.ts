@@ -1,5 +1,5 @@
 import type { Moment } from "moment"
-import { Vault, moment as momentModule } from "obsidian"
+import { Vault, moment as momentModule, normalizePath } from "obsidian"
 
 // Obsidian exports moment as `typeof Moment` (the namespace), which TypeScript
 // doesn't treat as callable even though the runtime value is the callable
@@ -20,6 +20,14 @@ export function cleanTitle(title: string): string {
     .replace(UNSAFE_FILENAME_RE, "-")
     .replace(/\s+/g, " ")
     .trim()
+}
+
+// Every path that reaches a vault API comes from user settings, so it must be
+// normalized first. `normalizePath("")` returns "/", which would resolve to the
+// vault root -- return an empty string instead so callers can treat it as unset.
+export function vaultPath(path: string): string {
+  const trimmed = path.trim()
+  return trimmed === "" ? "" : normalizePath(trimmed)
 }
 
 export function formatDate(date: Date): string {
@@ -59,7 +67,7 @@ export function meetingNotePath(
   const withExt = trimmedFile.endsWith(".md")
     ? trimmedFile
     : `${trimmedFile}.md`
-  return trimmedBase ? `${trimmedBase}/${withExt}` : withExt
+  return vaultPath(trimmedBase ? `${trimmedBase}/${withExt}` : withExt)
 }
 
 export async function ensureFolderExists(

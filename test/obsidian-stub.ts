@@ -12,6 +12,20 @@ export class TFolder {}
 export class Vault {}
 export class App {}
 
+/*
+ * Mirrors Obsidian's normalizePath: collapse repeated and back slashes, strip
+ * leading and trailing slashes, swap non-breaking spaces, and NFC-normalize.
+ * An empty result becomes "/", as in the real implementation.
+ */
+export function normalizePath(path: string): string {
+  const cleaned = path
+    .replace(/[\\/]+/g, "/")
+    .replace(/^\/|\/$/g, "")
+    .replace(/\u00A0|\u202F/g, " ")
+    .normalize("NFC")
+  return cleaned === "" ? "/" : cleaned
+}
+
 export function requestUrl(): never {
   throw new Error("requestUrl is not available in tests")
 }

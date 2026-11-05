@@ -1,4 +1,4 @@
-// Bumps the plugin version in package.json and src/manifest.json in lockstep
+// Bumps the plugin version in package.json and manifest.json in lockstep
 // and records the new version -> minAppVersion mapping in versions.json (which
 // the Obsidian community directory uses to serve the right build per app
 // version). Run with: node scripts/bump-version.ts <patch|minor|major|x.y.z>
@@ -48,14 +48,14 @@ if (!arg) {
 }
 
 const pkg = readJson("package.json")
-const manifest = readJson("src/manifest.json")
+const manifest = readJson("manifest.json")
 
 const current = String(pkg.version)
 const version = nextVersion(current, arg)
 const minAppVersion = String(manifest.minAppVersion)
 
 writeJson("package.json", { ...pkg, version })
-writeJson("src/manifest.json", { ...manifest, version })
+writeJson("manifest.json", { ...manifest, version })
 
 let versions: Record<string, string> = {}
 try {

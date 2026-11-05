@@ -114,8 +114,10 @@
 }
 
 .ds-event-card {
+  --ds-calendar-color: var(--interactive-accent);
+
   padding: 8px 10px;
-  border-left: 3px solid var(--interactive-accent);
+  border-left: 3px solid var(--ds-calendar-color);
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 120ms ease;
