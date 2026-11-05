@@ -293,8 +293,7 @@ export async function fetchCalendarEvents(
   const results = await Promise.allSettled(
     sources.map(async (source) => {
       const response = await requestUrl({ url: source.url })
-      const jcal = ICAL.parse(response.text)
-      const root = new ICAL.Component(jcal)
+      const root = ICAL.Component.fromString(response.text)
       registerTimezones(root)
       return expandEventsForDate(root, targetDate, source.name, source.color)
     })

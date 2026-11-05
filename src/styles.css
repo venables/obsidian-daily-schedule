@@ -66,8 +66,9 @@
   background: none;
   box-shadow: none;
   cursor: pointer;
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
+  border: none;
+  border-bottom: 1px dotted currentColor;
+  border-radius: 0;
 }
 
 .ds-date-btn:hover {

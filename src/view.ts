@@ -165,7 +165,7 @@ export class ScheduleView extends ItemView {
     contentEl.addClass("ds-container")
     this.renderHeader(contentEl)
 
-    const errorEl = contentEl.createEl("div", { cls: "ds-error" })
+    const errorEl = contentEl.createDiv({ cls: "ds-error" })
     errorEl.createEl("p", { text: "Failed to load calendar." })
     const retryBtn = errorEl.createEl("button", {
       text: "Retry",
@@ -181,14 +181,14 @@ export class ScheduleView extends ItemView {
     const dateStr = formatDate(selected)
     const dayName = selected.toLocaleDateString([], { weekday: "long" })
 
-    const header = container.createEl("div", { cls: "ds-header" })
+    const header = container.createDiv({ cls: "ds-header" })
 
-    const left = header.createEl("div", { cls: "ds-header-left" })
+    const left = header.createDiv({ cls: "ds-header-left" })
     this.renderNavButton(left, "chevron-left", "Previous day", -1)
     this.renderDate(left, dateStr)
     this.renderNavButton(left, "chevron-right", "Next day", 1)
 
-    const right = header.createEl("div", { cls: "ds-header-right" })
+    const right = header.createDiv({ cls: "ds-header-right" })
     const refreshBtn = right.createEl("button", {
       cls: "ds-refresh-btn clickable-icon",
       attr: { "aria-label": "Refresh schedule" }
@@ -199,17 +199,19 @@ export class ScheduleView extends ItemView {
       refreshBtn.classList.remove("ds-spinning")
       // Re-add on the next frame so the animation restarts cleanly on
       // rapid repeat clicks (adding an already-present class is a no-op).
-      requestAnimationFrame(() => refreshBtn.classList.add("ds-spinning"))
+      window.requestAnimationFrame(() =>
+        refreshBtn.classList.add("ds-spinning")
+      )
       void this.refresh()
     })
-    right.createEl("span", { cls: "ds-day", text: dayName })
+    right.createSpan({ cls: "ds-day", text: dayName })
   }
 
   // On any day but today the date doubles as the way back to today, so the
   // header stays on one line in a narrow sidebar.
   private renderDate(container: HTMLElement, dateStr: string): void {
     if (this.dayOffset === 0) {
-      container.createEl("span", { cls: "ds-date", text: dateStr })
+      container.createSpan({ cls: "ds-date", text: dateStr })
       return
     }
 
@@ -259,7 +261,7 @@ export class ScheduleView extends ItemView {
     }
 
     const now = new Date()
-    const list = contentEl.createEl("div", { cls: "ds-event-list" })
+    const list = contentEl.createDiv({ cls: "ds-event-list" })
     const hasAttendees = visible.some((e) => e.attendees.length > 0)
     const emailMap: EmailMap | null = hasAttendees
       ? buildEmailMap(this.app, settings.peopleFolders)
@@ -290,7 +292,7 @@ export class ScheduleView extends ItemView {
             a.partstat === "DECLINED"
         )
 
-      const card = list.createEl("div", {
+      const card = list.createDiv({
         cls: `ds-event-card${isPast ? " ds-event-past" : ""}${isCurrent ? " ds-event-current" : ""}${isDeclined ? " ds-event-declined" : ""}`
       })
 
@@ -304,8 +306,8 @@ export class ScheduleView extends ItemView {
           ? `${formatTime(event.start)} - ${formatTime(event.end)}`
           : formatTime(event.start)
 
-      card.createEl("div", { cls: "ds-event-time", text: timeText })
-      card.createEl("div", { cls: "ds-event-title", text: event.title })
+      card.createDiv({ cls: "ds-event-time", text: timeText })
+      card.createDiv({ cls: "ds-event-title", text: event.title })
 
       if (event.attendees.length > 0 && emailMap) {
         const resolved = resolveAttendees(
@@ -317,7 +319,7 @@ export class ScheduleView extends ItemView {
         if (resolved.length > 0) {
           const names = resolved.map((a) => a.name).slice(0, 4)
           const suffix = resolved.length > 4 ? ` +${resolved.length - 4}` : ""
-          card.createEl("div", {
+          card.createDiv({
             cls: "ds-event-attendees",
             text: `with ${names.join(", ")}${suffix}`
           })

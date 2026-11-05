@@ -26,7 +26,7 @@ Today's meetings in your Obsidian sidebar — one click to a pre-filled note.
 
 ## Requirements
 
-- Obsidian **1.4.0** or later
+- Obsidian **1.7.2** or later
 - An ICS feed URL from your calendar provider (see [Configuration](#calendars))
 
 ## Installation
@@ -221,8 +221,8 @@ If a note at that path already exists, it's opened instead of overwritten.
 
 ## Commands
 
-- **Open daily schedule** — reveals the sidebar view
-- **Refresh daily schedule** — manual re-fetch
+- **Open sidebar** — reveals the sidebar view
+- **Refresh calendars** — manual re-fetch
 
 There's also a ribbon icon (calendar-clock) for opening the view.
 
@@ -232,7 +232,7 @@ There's also a ribbon icon (calendar-clock) for opening the view.
 bun install
 bun run dev        # tsdown watch mode
 bun run build      # one-shot production build
-bun run check      # format, lint, typecheck, test
+bun run check      # format, lint, Obsidian lint, typecheck, test
 bun run fix        # format + auto-fix lint
 ```
 

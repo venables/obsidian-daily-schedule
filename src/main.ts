@@ -6,6 +6,7 @@ import {
   DailyScheduleSettingTab,
   type DailyScheduleSettings
 } from "./settings"
+import { parseSettings } from "./settingsSchema"
 import { ScheduleView, VIEW_TYPE } from "./view"
 
 export default class DailySchedulePlugin extends Plugin {
@@ -24,16 +25,16 @@ export default class DailySchedulePlugin extends Plugin {
     })
 
     this.addCommand({
-      id: "open-daily-schedule",
-      name: "Open daily schedule",
+      id: "open-sidebar",
+      name: "Open sidebar",
       callback: () => {
         void this.activateView()
       }
     })
 
     this.addCommand({
-      id: "refresh-daily-schedule",
-      name: "Refresh daily schedule",
+      id: "refresh-calendars",
+      name: "Refresh calendars",
       callback: () => {
         this.refreshView()
       }
@@ -57,8 +58,8 @@ export default class DailySchedulePlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const data = await this.loadData()
-    this.settings = { ...DEFAULT_SETTINGS, ...data }
+    const data: unknown = await this.loadData()
+    this.settings = parseSettings(data, DEFAULT_SETTINGS)
   }
 
   async updateSettings(partial: Partial<DailyScheduleSettings>): Promise<void> {

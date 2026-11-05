@@ -9,7 +9,7 @@ import type { ResolvedAttendee } from "./people"
 // Mirrors the moment cast in helpers.ts -- runtime is a callable fn but the TS
 // type is a namespace.
 type CallableMoment = typeof momentModule & ((input: Date) => Moment)
-// eslint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- moment at runtime is a callable fn, but its TS type is a namespace
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- moment at runtime is a callable fn, but its TS type is a namespace
 const moment = momentModule as unknown as CallableMoment
 
 // Event-derived placeholders we always own. The core Templates plugin's

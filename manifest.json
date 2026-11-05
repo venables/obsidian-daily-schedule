@@ -1,8 +1,8 @@
 {
   "id": "daily-schedule",
   "name": "Daily Schedule",
-  "version": "1.0.1",
-  "minAppVersion": "1.4.0",
+  "version": "1.0.2",
+  "minAppVersion": "1.7.2",
   "description": "Shows today's calendar events in a sidebar, creates meeting notes on click.",
   "author": "Matt Venables",
   "authorUrl": "https://github.com/venables",
