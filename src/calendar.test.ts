@@ -15,7 +15,7 @@ const TODAY = new Date(2026, 6, 7)
 function ics(...vevents: string[]): ICAL.Component {
   const body = vevents.map((v) => `BEGIN:VEVENT\n${v}\nEND:VEVENT`).join("\n")
   const raw = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//test//EN\n${body}\nEND:VCALENDAR`
-  return new ICAL.Component(ICAL.parse(raw))
+  return ICAL.Component.fromString(raw)
 }
 
 function expand(root: ICAL.Component): readonly ScheduleEvent[] {
