@@ -14,11 +14,14 @@
     "lint": "oxlint",
     "lint:fix": "bun run lint --fix --fix-suggestions",
     "lint:fixall": "bun run lint:fix --fix-dangerously",
+    "lint:obsidian": "eslint .",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "version:bump": "bun scripts/bump-version.ts"
   },
   "devDependencies": {
+    "eslint": "10.13.0",
+    "eslint-plugin-obsidianmd": "0.4.2",
     "ical.js": "^2.2.1",
     "moment": "2.29.4",
     "obsidian": "^1.12.3",
@@ -27,6 +30,7 @@
     "oxlint-tsgolint": "latest",
     "tsdown": "latest",
     "typescript": "^6",
+    "typescript-eslint": "8.71.2",
     "vitest": "^4.1.10"
   },
   "packageManager": "bun@1.4.4"
