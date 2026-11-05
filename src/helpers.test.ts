@@ -7,7 +7,8 @@ import {
   isSameDay,
   meetingNotePath,
   removeEmoji,
-  startOfDay
+  startOfDay,
+  vaultPath
 } from "./helpers"
 
 describe("removeEmoji", () => {
@@ -77,6 +78,18 @@ describe("addDays", () => {
     const original = new Date(2026, 6, 7)
     addDays(original, 5)
     expect(original).toEqual(new Date(2026, 6, 7))
+  })
+})
+
+describe("vaultPath", () => {
+  test("returns an empty string for an unset path", () => {
+    expect(vaultPath("")).toBe("")
+    expect(vaultPath("   ")).toBe("")
+  })
+
+  test("trims and normalizes slashes", () => {
+    expect(vaultPath("  /meetings//2026/  ")).toBe("meetings/2026")
+    expect(vaultPath("templates\\meeting.md")).toBe("templates/meeting.md")
   })
 })
 
