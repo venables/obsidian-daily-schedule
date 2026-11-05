@@ -5,7 +5,7 @@ import { Vault, moment as momentModule, normalizePath } from "obsidian"
 // doesn't treat as callable even though the runtime value is the callable
 // moment function. Widen to include a call signature so we can invoke it.
 type CallableMoment = typeof momentModule & ((input: Date) => Moment)
-// eslint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- moment at runtime is a callable fn, but its TS type is a namespace
+// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- moment at runtime is a callable fn, but its TS type is a namespace
 const moment = momentModule as unknown as CallableMoment
 
 const EMOJI_RE = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu

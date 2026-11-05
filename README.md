@@ -232,7 +232,7 @@ There's also a ribbon icon (calendar-clock) for opening the view.
 bun install
 bun run dev        # tsdown watch mode
 bun run build      # one-shot production build
-bun run check      # format, lint, typecheck, test
+bun run check      # format, lint, Obsidian lint, typecheck, test
 bun run fix        # format + auto-fix lint
 ```
 

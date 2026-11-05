@@ -39,7 +39,7 @@ function asFormat(value: unknown): string | null {
 // plugin, so our {{date}} / {{time}} substitutions match what the core
 // plugin itself would have produced.
 export function getCoreTemplatesFormats(app: App): CoreTemplatesFormats {
-  // eslint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- internalPlugins is not in obsidian.d.ts
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- internalPlugins is not in obsidian.d.ts
   const host = app as unknown as InternalPluginsHost
   const plugin = host.internalPlugins?.plugins?.templates
   if (!plugin?.enabled) {
