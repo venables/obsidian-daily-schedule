@@ -25,16 +25,16 @@ export default class DailySchedulePlugin extends Plugin {
     })
 
     this.addCommand({
-      id: "open-daily-schedule",
-      name: "Open daily schedule",
+      id: "open-sidebar",
+      name: "Open sidebar",
       callback: () => {
         void this.activateView()
       }
     })
 
     this.addCommand({
-      id: "refresh-daily-schedule",
-      name: "Refresh daily schedule",
+      id: "refresh-calendars",
+      name: "Refresh calendars",
       callback: () => {
         this.refreshView()
       }

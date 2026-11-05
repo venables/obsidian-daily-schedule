@@ -221,8 +221,8 @@ If a note at that path already exists, it's opened instead of overwritten.
 
 ## Commands
 
-- **Open daily schedule** — reveals the sidebar view
-- **Refresh daily schedule** — manual re-fetch
+- **Open sidebar** — reveals the sidebar view
+- **Refresh calendars** — manual re-fetch
 
 There's also a ribbon icon (calendar-clock) for opening the view.
 
