@@ -26,7 +26,7 @@ Today's meetings in your Obsidian sidebar — one click to a pre-filled note.
 
 ## Requirements
 
-- Obsidian **1.4.0** or later
+- Obsidian **1.7.2** or later
 - An ICS feed URL from your calendar provider (see [Configuration](#calendars))
 
 ## Installation
