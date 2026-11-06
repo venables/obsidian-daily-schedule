@@ -8,7 +8,7 @@
         "eslint": "10.13.0",
         "eslint-plugin-obsidianmd": "0.4.2",
         "ical.js": "^2.2.1",
-        "moment": "2.29.4",
+        "moment": "2.31.0",
         "obsidian": "^1.12.3",
         "oxfmt": "latest",
         "oxlint": "latest",
@@ -20,6 +20,9 @@
         "vitest": "^4.1.10",
       },
     },
+  },
+  "overrides": {
+    "moment": "2.31.0",
   },
   "packages": {
     "@babel/generator": ["@babel/generator@8.0.0", "", { "dependencies": { "@babel/parser": "8.0.0", "@babel/types": "8.0.0", "@jridgewell/gen-mapping": "0.3.13", "@jridgewell/trace-mapping": "0.3.31", "@types/jsesc": "2.5.1", "jsesc": "3.1.0" } }, "sha512-NT9NrVwJsbSV6Y2FSstWa71EETOnzrjkL5/wX3D2mYHtKM+qvqB1DvR4D0Setb/gDBsHzRICifwEWMO8CnTF6g=="],
@@ -626,7 +629,7 @@
 
     "module-replacements": ["module-replacements@2.11.0", "", {}, "sha512-j5sNQm3VCpQQ7nTqGeOZtoJtV3uKERgCBm9QRhmGRiXiqkf7iRFOkfxdJRZWLkqYY8PNf4cDQF/WfXUYLENrRA=="],
 
-    "moment": ["moment@2.29.4", "", {}, "sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w=="],
+    "moment": ["moment@2.31.0", "", {}, "sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw=="],
 
     "ms": ["ms@2.1.3", "", {}, "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="],
 
