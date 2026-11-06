@@ -11,26 +11,22 @@
     "fix": "bun run lint:fix && bun run format",
     "format": "bun fmt",
     "format:check": "bun run format --check",
-    "lint": "oxlint",
+    "lint": "bun lint",
     "lint:fix": "bun run lint --fix --fix-suggestions",
     "lint:fixall": "bun run lint:fix --fix-dangerously",
-    "lint:obsidian": "eslint .",
+    "lint:obsidian": "bun lint --config eslint.config.mjs --type-aware --allow-unsupported",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "version:bump": "bun scripts/bump-version.ts"
   },
   "devDependencies": {
     "@types/bun": "1.4.4",
-    "eslint": "10.13.0",
     "eslint-plugin-obsidianmd": "0.4.2",
     "ical.js": "^2.2.1",
     "moment": "2.31.0",
     "obsidian": "^1.12.3",
-    "oxlint": "latest",
-    "oxlint-tsgolint": "latest",
     "tsdown": "latest",
     "typescript": "^6",
-    "typescript-eslint": "8.71.2",
     "valibot": "1.5.0"
   },
   "overrides": {
