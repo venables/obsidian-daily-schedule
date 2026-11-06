@@ -248,22 +248,22 @@ describe("expandEventsForDate: recurrence windowing", () => {
   })
 })
 
-describe("filterIgnoredEvents", () => {
-  function titled(title: string): ScheduleEvent {
-    return {
-      uid: title,
-      title,
-      start: TODAY,
-      end: null,
-      allDay: false,
-      attendees: [],
-      location: null,
-      description: null,
-      calendarName: "Work",
-      calendarColor: "#abc"
-    }
+function titled(title: string): ScheduleEvent {
+  return {
+    uid: title,
+    title,
+    start: TODAY,
+    end: null,
+    allDay: false,
+    attendees: [],
+    location: null,
+    description: null,
+    calendarName: "Work",
+    calendarColor: "#abc"
   }
+}
 
+describe("filterIgnoredEvents", () => {
   const events: readonly ScheduleEvent[] = [
     titled("Commute to office"),
     titled("Design Review"),
