@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest"
+import { describe, expect, test } from "bun:test"
 
 import type { DailyScheduleSettings } from "./settings"
 import { parseSettings } from "./settingsSchema"

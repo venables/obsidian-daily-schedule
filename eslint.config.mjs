@@ -1,27 +1,19 @@
 import obsidianmd from "eslint-plugin-obsidianmd"
-import { defineConfig, globalIgnores } from "eslint/config"
 
 /*
- * Runs the same rule set as the Obsidian community plugin review, so a
- * release does not fail the directory scan. oxlint stays the main linter.
+ * Runs the rule set of the Obsidian community plugin review, so a release
+ * does not fail the directory scan. `bun run lint:obsidian` runs this file;
+ * `bun run lint` uses .oxlintrc.json for everything else.
  */
-export default defineConfig([
-  globalIgnores(["node_modules", "dist", "scripts", "test", "*.config.ts"]),
+export default [
+  { ignores: ["node_modules", "dist", "scripts", "test", "*.config.ts"] },
   ...obsidianmd.configs.recommended,
   {
     /*
-     * The disable comments in src/ target oxlint, which checks them. ESLint
-     * does not enable most of those rules, so it would report each one as
-     * unused.
+     * The disable comments in src/ target the .oxlintrc.json rules, which
+     * this config does not enable, so each one would be reported as unused.
      */
-    linterOptions: { reportUnusedDisableDirectives: "off" },
-    languageOptions: {
-      parserOptions: {
-        projectService: {
-          allowDefaultProject: ["eslint.config.mjs"]
-        }
-      }
-    }
+    linterOptions: { reportUnusedDisableDirectives: "off" }
   },
   {
     files: ["package.json"],
@@ -30,4 +22,4 @@ export default defineConfig([
       "depend/ban-dependencies": "off"
     }
   }
-])
+]

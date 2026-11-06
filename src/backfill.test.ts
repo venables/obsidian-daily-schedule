@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest"
+import { describe, expect, test } from "bun:test"
 
 import { rewriteAttendeeLine, rewriteAttendeesBlock } from "./backfill"
 import type { EmailMap } from "./people"

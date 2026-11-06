@@ -228,7 +228,10 @@ There's also a ribbon icon (calendar-clock) for opening the view.
 
 ## Development
 
+Linting needs the canary build of Bun until `bun lint` is in a stable release:
+
 ```bash
+bun upgrade --canary
 bun install
 bun run dev        # tsdown watch mode
 bun run build      # one-shot production build
@@ -257,8 +260,8 @@ src/
 └── helpers.ts         date/time/string utilities
 ```
 
-Built with [tsdown](https://tsdown.dev/) (bundling),
-[oxlint](https://oxc.rs/docs/guide/usage/linter.html) + oxfmt (lint/format), and
+Built with [tsdown](https://tsdown.dev/) (bundling), Bun's built-in linter,
+formatter and test runner, and
 [`ical.js`](https://www.npmjs.com/package/ical.js) for ICS parsing.
 
 ## Contributing
