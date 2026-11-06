@@ -1,5 +1,6 @@
+import { describe, expect, test } from "bun:test"
+
 import ICAL from "ical.js"
-import { describe, expect, test } from "vitest"
 
 import {
   expandEventsForDate,
