@@ -2,7 +2,6 @@ import ICAL from "ical.js"
 import { requestUrl } from "obsidian"
 
 import { isSameDay } from "./helpers"
-import type { CalendarSource } from "./settings"
 
 // How far before the target date to begin iterating a recurring series.
 // Starting at the series DTSTART means a years-old daily event walks thousands
@@ -284,8 +283,14 @@ export function expandEventsForDate(
   return results
 }
 
+export interface CalendarFeed {
+  readonly name: string
+  readonly url: string
+  readonly color: string
+}
+
 export async function fetchCalendarEvents(
-  sources: readonly CalendarSource[],
+  sources: readonly CalendarFeed[],
   targetDate: Date = new Date()
 ): Promise<readonly ScheduleEvent[]> {
   const allEvents: ScheduleEvent[] = []

@@ -91,12 +91,20 @@ Open **Settings → Daily Schedule**.
 Click **Add calendar** and provide:
 
 - **Name** — e.g. "Work", "Personal"
-- **ICS URL** — a secret `.ics` feed URL (see below)
+- **Calendar URL** — a secret that holds the `.ics` feed URL (see below)
 - **Accent color** — shown as the left border on event cards
 
 > **Privacy note:** ICS feed URLs are effectively read credentials for your
-> calendar. Anyone with the URL can read all your events. Treat them like
-> passwords — don't commit them to git, don't paste them in screenshots.
+> calendar. Anyone with the URL can read all your events. The plugin keeps each
+> URL in Obsidian's secret storage, not in its `data.json`, so syncing or
+> committing the plugin folder does not share it. Still treat the URL like a
+> password, and don't paste it in screenshots.
+>
+> Calendars saved by version 1.0.2 or earlier move to secret storage the first
+> time the plugin loads. Each gets a secret named `calendar-<name>`.
+>
+> If you use the vault on more than one device, add the secret on each device
+> with the same name. The settings file stores only the name.
 
 **Getting an ICS URL from Google Calendar:** Google Calendar → Settings → pick
 the calendar → _Integrate calendar_ → **Secret address in iCal format**.
@@ -256,6 +264,7 @@ src/
 ├── settingControls.ts control key <-> settings mapping
 ├── calendarModal.ts   calendar add/edit modal
 ├── calendar.ts        ICS fetch, RRULE expansion, filtering
+├── calendarSecrets.ts calendar URL secrets + migration
 ├── meeting.ts         meeting note path + creation orchestration
 ├── template.ts        template placeholder rendering
 ├── coreTemplates.ts   internal accessor for Obsidian's core Templates plugin

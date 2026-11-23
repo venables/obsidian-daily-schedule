@@ -2,7 +2,8 @@ import { DEFAULT_MEETING_FILE_PATTERN } from "./helpers"
 
 export interface CalendarSource {
   readonly name: string
-  readonly url: string
+  /** SecretStorage ID of the secret that holds the ICS URL. */
+  readonly urlSecret: string
   readonly color: string
 }
 

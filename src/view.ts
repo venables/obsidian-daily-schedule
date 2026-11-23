@@ -5,6 +5,7 @@ import {
   filterIgnoredEvents,
   type ScheduleEvent
 } from "./calendar"
+import { resolveCalendarFeeds } from "./calendarSecrets"
 import { addDays, formatDate, formatTime, startOfDay } from "./helpers"
 import type DailySchedulePlugin from "./main"
 import { buildMeetingNotePath, createMeetingNote } from "./meeting"
@@ -83,6 +84,22 @@ export class ScheduleView extends ItemView {
       return
     }
 
+    const { feeds, missing } = resolveCalendarFeeds(settings.calendars, (id) =>
+      this.app.secretStorage.getSecret(id)
+    )
+    if (missing.length > 0) {
+      console.warn(
+        "[daily-schedule] No URL secret found for:",
+        missing.join(", ")
+      )
+    }
+    if (feeds.length === 0) {
+      this.renderEmpty(
+        "No calendar URL secrets found. Open plugin settings to set them."
+      )
+      return
+    }
+
     // Show existing events while refreshing, or loading message if none
     if (this.events.length === 0) {
       this.renderLoading()
@@ -91,7 +108,7 @@ export class ScheduleView extends ItemView {
     const token = ++this.fetchToken
 
     try {
-      const fetched = await fetchCalendarEvents(settings.calendars, target)
+      const fetched = await fetchCalendarEvents(feeds, target)
       if (token !== this.fetchToken) {
         return
       }

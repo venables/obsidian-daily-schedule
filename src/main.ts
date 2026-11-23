@@ -1,6 +1,7 @@
 import { Notice, Plugin } from "obsidian"
 
 import { backfillAttendeeLinks } from "./backfill"
+import { migrateCalendarUrls } from "./calendarSecrets"
 import { DEFAULT_SETTINGS, type DailyScheduleSettings } from "./settings"
 import { parseSettings } from "./settingsSchema"
 import { DailyScheduleSettingTab } from "./settingsTab"
@@ -55,8 +56,20 @@ export default class DailySchedulePlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const data: unknown = await this.loadData()
+    const stored: unknown = await this.loadData()
+    const { secretStorage } = this.app
+    const { data, secrets } = migrateCalendarUrls(
+      stored,
+      secretStorage.listSecrets()
+    )
+    for (const secret of secrets) {
+      secretStorage.setSecret(secret.id, secret.value)
+    }
     this.settings = parseSettings(data, DEFAULT_SETTINGS)
+    if (secrets.length > 0) {
+      // Saving drops the plain URLs from data.json.
+      await this.saveData({ ...this.settings })
+    }
   }
 
   async updateSettings(partial: Partial<DailyScheduleSettings>): Promise<void> {
