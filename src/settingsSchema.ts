@@ -4,7 +4,7 @@ import type { DailyScheduleSettings } from "./settings"
 
 const CalendarSourceSchema = v.object({
   name: v.string(),
-  url: v.string(),
+  urlSecret: v.string(),
   color: v.string()
 })
 

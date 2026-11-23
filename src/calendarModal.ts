@@ -1,4 +1,4 @@
-import { App, Modal, Setting } from "obsidian"
+import { App, Modal, SecretComponent, Setting } from "obsidian"
 
 import type DailySchedulePlugin from "./main"
 import type { CalendarSource } from "./settings"
@@ -23,7 +23,7 @@ function nextDefaultColor(calendarCount: number): string {
  */
 export class CalendarModal extends Modal {
   private name: string
-  private url: string
+  private urlSecret: string
   private color: string
 
   constructor(
@@ -36,7 +36,7 @@ export class CalendarModal extends Modal {
     const existing = plugin.settings.calendars.at(index)
     const isEdit = index >= 0 && existing !== undefined
     this.name = isEdit ? existing.name : ""
-    this.url = isEdit ? existing.url : ""
+    this.urlSecret = isEdit ? existing.urlSecret : ""
     this.color = isEdit
       ? existing.color
       : nextDefaultColor(plugin.settings.calendars.length)
@@ -55,16 +55,18 @@ export class CalendarModal extends Modal {
         })
     )
 
-    new Setting(contentEl).setName("ICS URL").addText((text) =>
-      text
-        .setPlaceholder(
-          "https://calendar.google.com/calendar/ical/.../basic.ics"
-        )
-        .setValue(this.url)
-        .onChange((v) => {
-          this.url = v
-        })
-    )
+    new Setting(contentEl)
+      .setName("Calendar URL")
+      .setDesc(
+        "Pick or create a secret that holds the ICS feed URL. Obsidian keeps secrets out of the plugin settings file."
+      )
+      .addComponent((el) =>
+        new SecretComponent(this.app, el)
+          .setValue(this.urlSecret)
+          .onChange((v) => {
+            this.urlSecret = v ?? ""
+          })
+      )
 
     new Setting(contentEl).setName("Accent color").addColorPicker((cp) =>
       cp
@@ -90,12 +92,12 @@ export class CalendarModal extends Modal {
   }
 
   private async save(): Promise<void> {
-    if (!this.url.trim()) {
+    if (!this.urlSecret) {
       return
     }
     const entry: CalendarSource = {
       name: this.name.trim() || "Calendar",
-      url: this.url.trim(),
+      urlSecret: this.urlSecret,
       color: this.color
     }
     const current = this.plugin.settings.calendars

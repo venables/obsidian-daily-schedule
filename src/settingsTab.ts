@@ -28,10 +28,6 @@ const REFRESH_OPTIONS = {
   "60": "60"
 }
 
-function truncateUrl(url: string): string {
-  return url.length > 60 ? url.slice(0, 57) + "..." : url
-}
-
 export class DailyScheduleSettingTab extends PluginSettingTab {
   constructor(
     app: App,
@@ -68,7 +64,9 @@ export class DailyScheduleSettingTab extends PluginSettingTab {
       emptyState: "No calendars yet.",
       items: this.plugin.settings.calendars.map((cal, i) => ({
         name: cal.name || `Calendar ${i + 1}`,
-        desc: cal.url ? truncateUrl(cal.url) : "No URL set",
+        desc: cal.urlSecret
+          ? `URL secret: ${cal.urlSecret}`
+          : "No URL secret set",
         action: () => {
           this.openCalendarModal(i)
         }

@@ -26,9 +26,7 @@ describe("parseSettings", () => {
 
   test("keeps valid saved values over the defaults", () => {
     const saved = {
-      calendars: [
-        { name: "Work", url: "https://example.com/a.ics", color: "#f00" }
-      ],
+      calendars: [{ name: "Work", urlSecret: "calendar-work", color: "#f00" }],
       refreshIntervalMinutes: 30,
       peopleFolders: ["contacts"]
     }
