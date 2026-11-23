@@ -9,30 +9,28 @@
     "deploy": "scripts/deploy.sh",
     "dev": "cp manifest.json src/styles.css dist/ && tsdown --watch --sourcemap --no-minify",
     "fix": "bun run lint:fix && bun run format",
-    "format": "oxfmt",
+    "format": "bun fmt",
     "format:check": "bun run format --check",
-    "lint": "oxlint",
+    "lint": "bun lint",
     "lint:fix": "bun run lint --fix --fix-suggestions",
     "lint:fixall": "bun run lint:fix --fix-dangerously",
-    "lint:obsidian": "eslint .",
-    "test": "vitest run",
+    "lint:obsidian": "bun lint --config eslint.config.mjs --type-aware --allow-unsupported",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
     "version:bump": "bun scripts/bump-version.ts"
   },
   "devDependencies": {
-    "eslint": "10.13.0",
+    "@types/bun": "1.4.4",
     "eslint-plugin-obsidianmd": "0.4.2",
     "ical.js": "^2.2.1",
-    "moment": "2.29.4",
+    "moment": "2.31.0",
     "obsidian": "^1.12.3",
-    "oxfmt": "latest",
-    "oxlint": "latest",
-    "oxlint-tsgolint": "latest",
     "tsdown": "latest",
     "typescript": "^6",
-    "typescript-eslint": "8.71.2",
-    "valibot": "1.5.0",
-    "vitest": "^4.1.10"
+    "valibot": "1.5.0"
+  },
+  "overrides": {
+    "moment": "2.31.0"
   },
   "packageManager": "bun@1.4.4"
 }

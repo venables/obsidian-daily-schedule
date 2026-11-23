@@ -1,5 +1,6 @@
+import { describe, expect, test } from "bun:test"
+
 import ICAL from "ical.js"
-import { describe, expect, test } from "vitest"
 
 import {
   expandEventsForDate,
@@ -247,22 +248,22 @@ describe("expandEventsForDate: recurrence windowing", () => {
   })
 })
 
-describe("filterIgnoredEvents", () => {
-  function titled(title: string): ScheduleEvent {
-    return {
-      uid: title,
-      title,
-      start: TODAY,
-      end: null,
-      allDay: false,
-      attendees: [],
-      location: null,
-      description: null,
-      calendarName: "Work",
-      calendarColor: "#abc"
-    }
+function titled(title: string): ScheduleEvent {
+  return {
+    uid: title,
+    title,
+    start: TODAY,
+    end: null,
+    allDay: false,
+    attendees: [],
+    location: null,
+    description: null,
+    calendarName: "Work",
+    calendarColor: "#abc"
   }
+}
 
+describe("filterIgnoredEvents", () => {
   const events: readonly ScheduleEvent[] = [
     titled("Commute to office"),
     titled("Design Review"),
