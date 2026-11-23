@@ -26,7 +26,7 @@ Today's meetings in your Obsidian sidebar — one click to a pre-filled note.
 
 ## Requirements
 
-- Obsidian **1.7.2** or later
+- Obsidian **1.13.0** or later
 - An ICS feed URL from your calendar provider (see [Configuration](#calendars))
 
 ## Installation
@@ -251,7 +251,10 @@ folder to opt in.
 src/
 ├── main.ts            plugin entrypoint, commands, refresh timer
 ├── view.ts            sidebar ItemView + event rendering
-├── settings.ts        settings tab + calendar add/edit modal
+├── settings.ts        settings types + defaults
+├── settingsTab.ts     declarative settings tab
+├── settingControls.ts control key <-> settings mapping
+├── calendarModal.ts   calendar add/edit modal
 ├── calendar.ts        ICS fetch, RRULE expansion, filtering
 ├── meeting.ts         meeting note path + creation orchestration
 ├── template.ts        template placeholder rendering

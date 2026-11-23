@@ -1,12 +1,9 @@
 import { Notice, Plugin } from "obsidian"
 
 import { backfillAttendeeLinks } from "./backfill"
-import {
-  DEFAULT_SETTINGS,
-  DailyScheduleSettingTab,
-  type DailyScheduleSettings
-} from "./settings"
+import { DEFAULT_SETTINGS, type DailyScheduleSettings } from "./settings"
 import { parseSettings } from "./settingsSchema"
+import { DailyScheduleSettingTab } from "./settingsTab"
 import { ScheduleView, VIEW_TYPE } from "./view"
 
 export default class DailySchedulePlugin extends Plugin {

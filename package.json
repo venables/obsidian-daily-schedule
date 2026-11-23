@@ -21,15 +21,19 @@
   },
   "devDependencies": {
     "@types/bun": "1.4.4",
-    "eslint-plugin-obsidianmd": "0.4.2",
+    "eslint": "10.15.0",
+    "eslint-plugin-obsidianmd": "0.6.0",
     "ical.js": "^2.2.1",
     "moment": "2.31.0",
-    "obsidian": "^1.12.3",
+    "obsidian": "1.14.4",
     "tsdown": "latest",
     "typescript": "^6",
     "valibot": "1.5.0"
   },
   "overrides": {
+    "eslint-plugin-n": {
+      "minimatch": "11.0.9"
+    },
     "moment": "2.31.0"
   },
   "packageManager": "bun@1.4.4"
